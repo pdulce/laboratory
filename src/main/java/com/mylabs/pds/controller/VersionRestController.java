@@ -1,9 +1,9 @@
 package com.mylabs.pds.controller;
 
 import com.mylabs.pds.model.Version;
+import com.mylabs.pds.service.VersionService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
-import service.VersionService;
 
 import java.util.List;
 

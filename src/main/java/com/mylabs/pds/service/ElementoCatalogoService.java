@@ -1,4 +1,4 @@
-package service;
+package com.mylabs.pds.service;
 
 import com.mylabs.pds.model.ElementoCatalogo;
 import com.mylabs.pds.repository.ElementoCatalogoRepository;

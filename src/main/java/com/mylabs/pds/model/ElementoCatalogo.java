@@ -3,7 +3,7 @@ package com.mylabs.pds.model;
 import lombok.Getter;
 import lombok.Setter;
 
-import javax.persistence.*;
+import jakarta.persistence.*;
 
 import java.util.List;
 
@@ -16,6 +16,7 @@ public class ElementoCatalogo {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @Column
     private String nombre;
 
     @OneToMany(mappedBy = "elementoCatalogo", cascade = CascadeType.ALL)
