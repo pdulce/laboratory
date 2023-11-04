@@ -19,17 +19,16 @@ import java.util.List;
 @RequestMapping("/testasks")
 public class GeneratorTestsRestController {
 
-    @Autowired
-    private GitHubService gitHubService;
 
     @GetMapping("/listTestingTasks")
     public List<Tarea> getAllTasks() {
+        GitHubService gitHubService = new GitHubService();
         return gitHubService.getListOfTasks();
     }
 
     @GetMapping("/generar-zip")
     public ResponseEntity<Resource> generarZipDeTareas() {
-
+        GitHubService gitHubService = new GitHubService();
         byte[] zipContent = gitHubService.getZipOfTests();
         HttpHeaders headers = new HttpHeaders();
         headers.add("Content-Disposition", "attachment; filename=tareas.zip");

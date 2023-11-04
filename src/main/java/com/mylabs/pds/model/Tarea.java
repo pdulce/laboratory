@@ -29,7 +29,7 @@ public class Tarea {
     @JoinColumn(name = "parent_task_id")
     private Tarea parentTaskId;
 
-    @OneToMany(mappedBy = "Tarea", cascade = CascadeType.ALL)
+    @OneToMany(mappedBy = "parentTaskId", cascade = CascadeType.ALL)
     private List<Tarea> childrenTasks;
 
     public Long getId() {
