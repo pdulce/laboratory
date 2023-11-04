@@ -5,11 +5,18 @@ import com.github.javaparser.ast.Modifier;
 import com.github.javaparser.ast.body.ClassOrInterfaceDeclaration;
 import com.github.javaparser.ast.body.MethodDeclaration;
 import com.github.javaparser.ast.body.TypeDeclaration;
+import com.mylabs.pds.model.Tarea;
+import com.mylabs.pds.utils.ZipUtil;
+
+import java.util.ArrayList;
+import java.util.List;
 
 public class TestClassGenerator {
 
-    public void generateTestClass(CompilationUnit cu) {
+    public Tarea generateTestClass(final CompilationUnit cu) {
+        Tarea tarea = null;
         if (cu != null) {
+            List<Tarea> childrenTasks = new ArrayList<>();
             // Obtén el nombre de la clase de la CompilationUnit
             String className = cu.findFirst(ClassOrInterfaceDeclaration.class).
                     map(TypeDeclaration::getNameAsString).orElse("UnknownClass");
@@ -29,13 +36,24 @@ public class TestClassGenerator {
             // Genera métodos de prueba para los métodos públicos
             for (MethodDeclaration method : cu.findAll(MethodDeclaration.class)) {
                 if (method.getModifiers().contains(Modifier.publicModifier())) {
-                    testClassDeclaration.addMember(generateTestMethod(method.getNameAsString()));
+                    MethodDeclaration methodDeclaration = generateTestMethod(method.getNameAsString());
+                    testClassDeclaration.addMember(methodDeclaration);
+                    Tarea newTask = new Tarea();
+                    newTask.setIsGenerateToZip(0);
+                    newTask.setName(method.getNameAsString());
+                    newTask.setContents(methodDeclaration.toString());
+                    childrenTasks.add(newTask);
                 }
             }
-
             // Puedes imprimir el contenido de la clase de prueba o escribirlo en un archivo
             System.out.println(testClass.toString());
+            tarea = new Tarea();
+            tarea.setName(className);
+            tarea.setContents(testClass.toString());
+            tarea.setChildrenTasks(childrenTasks);
+            tarea.setIsGenerateToZip(1);
         }
+        return tarea;
     }
 
     private MethodDeclaration generateTestMethod(String methodName) {
