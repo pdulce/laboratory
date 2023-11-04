@@ -1,10 +1,12 @@
 package com.mylabs.pds.service;
 
 import com.mylabs.pds.model.Tarea;
+import com.mylabs.pds.repository.TareaRepository;
 import com.mylabs.pds.utils.ZipUtil;
 import org.kohsuke.github.GHContent;
 import org.kohsuke.github.GHRepository;
 import org.kohsuke.github.GitHub;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -13,7 +15,10 @@ import java.util.List;
 public class GitHubService {
     private byte[] bytesOfZipped;
     private List<Tarea> tareas;
-    private static final String token = "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";
+    private static final String token = "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";
+    @Autowired
+    private TareaRepository tareaRepository;
+
     public GitHubService() {
         try {
             GitHub github = GitHub.connectUsingOAuth(token);
@@ -23,8 +28,9 @@ public class GitHubService {
                 return;
             }
             this.tareas = new ArrayList<>();
-            scanMainDir("src/", repository, this.tareas);
+            scanMainDir("src", repository, this.tareas);
             this.bytesOfZipped = ZipUtil.generarZipDesdeTareas(tareas);
+            this.tareaRepository.saveAll(this.tareas);
 
         } catch (IOException e) {
             e.printStackTrace();

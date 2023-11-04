@@ -35,7 +35,9 @@ public class TestClassGenerator {
 
             // Genera métodos de prueba para los métodos públicos
             for (MethodDeclaration method : cu.findAll(MethodDeclaration.class)) {
-                if (method.getModifiers().contains(Modifier.publicModifier())) {
+                if (!method.isAbstract() && method.isFinal() &&
+                        method.getModifiers().contains(Modifier.publicModifier()) &&
+                        method.hasJavaDocComment() && method.isFinal()) {
                     MethodDeclaration methodDeclaration = generateTestMethod(method.getNameAsString());
                     testClassDeclaration.addMember(methodDeclaration);
                     Tarea newTask = new Tarea();
@@ -48,7 +50,7 @@ public class TestClassGenerator {
             // Puedes imprimir el contenido de la clase de prueba o escribirlo en un archivo
             System.out.println(testClass.toString());
             tarea = new Tarea();
-            tarea.setName(className);
+            tarea.setName(className.concat("Test.java"));
             tarea.setContents(testClass.toString());
             tarea.setChildrenTasks(childrenTasks);
             tarea.setIsGenerateToZip(1);
