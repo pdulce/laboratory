@@ -9,6 +9,7 @@ import jakarta.persistence.*;
 @Setter
 @Entity
 public class Version {
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;

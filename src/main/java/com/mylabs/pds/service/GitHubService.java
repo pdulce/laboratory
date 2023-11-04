@@ -13,7 +13,7 @@ import java.util.List;
 public class GitHubService {
     private byte[] bytesOfZipped;
     private List<Tarea> tareas;
-    private static final String token = "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";
+    private static final String token = "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";
     public GitHubService() {
         try {
             GitHub github = GitHub.connectUsingOAuth(token);
@@ -27,8 +27,10 @@ public class GitHubService {
             List<GHContent> ghDirContent = repository.getDirectoryContent("src/");
             ghDirContent.forEach((ghContent -> {
                 try {
-                    Tarea tarea = javaParserService.generateTestClassForJavaFile(ghContent.read());
-                    tareas.add(tarea);
+                    if (ghContent.isFile() && ghContent.getName().endsWith("java")) {
+                        Tarea tarea = javaParserService.generateTestClassForJavaFile(ghContent.read());
+                        tareas.add(tarea);
+                    }
                 } catch (IOException e) {
                     throw new RuntimeException(e);
                 }
@@ -37,6 +39,14 @@ public class GitHubService {
 
         } catch (IOException e) {
             e.printStackTrace();
+        }
+    }
+
+    private void scanDir(final GHContent item, final List<GHContent> lista) {
+        if (item.isDirectory()) {
+            scanDir(null, lista);
+        } else if (item.isFile() && item.getName().endsWith("java")) {
+            lista.add(item);
         }
     }
 
