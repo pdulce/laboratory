@@ -111,6 +111,28 @@
 			<artifactId>kafka</artifactId>
 			<scope>test</scope>
 		</dependency>
+
+		<dependency>
+			<groupId>org.kohsuke</groupId>
+			<artifactId>github-api</artifactId>
+			<version>1.317</version>
+		</dependency>
+		<dependency>
+			<groupId>com.messners</groupId>
+			<artifactId>gitlab-api</artifactId>
+			<version>4.0.4</version>
+		</dependency>
+		<dependency>
+			<groupId>com.talanlabs</groupId>
+			<artifactId>java-gitlab-api</artifactId>
+			<version>1.4.1</version>
+		</dependency>
+		<dependency>
+			<groupId>com.github.javaparser</groupId>
+			<artifactId>javaparser-core</artifactId>
+			<version>3.25.6</version>
+		</dependency>
+
 	</dependencies>
 	<dependencyManagement>
 		<dependencies>
