@@ -14,12 +14,12 @@ public class VersionRestController {
     @Autowired
     private VersionService versionService;
 
-    @GetMapping
+    @GetMapping("/getAll")
     public List<Version> getAllVersiones() {
         return versionService.getAllVersiones();
     }
 
-    @PostMapping
+    @PostMapping("/create/{version}")
     public Version createVersion(@RequestBody Version version) {
         return versionService.createVersion(version);
     }

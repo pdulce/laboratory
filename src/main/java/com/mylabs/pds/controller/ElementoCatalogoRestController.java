@@ -15,12 +15,12 @@ public class ElementoCatalogoRestController {
     @Autowired
     private ElementoCatalogoService elementoCatalogoService;
 
-    @GetMapping
+    @GetMapping("/getAll")
     public List<ElementoCatalogo> getAllElementos() {
         return elementoCatalogoService.getAllElementos();
     }
 
-    @PostMapping
+    @PostMapping("/create/{elemento}")
     public ElementoCatalogo createElemento(@RequestBody ElementoCatalogo elemento) {
         return elementoCatalogoService.createElemento(elemento);
     }
