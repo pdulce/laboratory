@@ -15,10 +15,12 @@ public class VersionService {
     private VersionRepository versionRepository;
 
     public final List<Version> getAllVersiones() {
+
         return this.versionRepository.findAll();
     }
 
     public Version createVersion(@RequestBody Version version) {
+
         return this.versionRepository.save(version);
     }
 

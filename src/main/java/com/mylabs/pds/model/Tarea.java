@@ -27,9 +27,11 @@ public class Tarea {
 
     @ManyToOne
     @JoinColumn(name = "parent_task_id")
+    //@Column(name = "parent_task_id")
     private Tarea parentTaskId;
 
     @OneToMany(mappedBy = "parentTaskId", cascade = CascadeType.ALL)
+    //@Transient
     private List<Tarea> childrenTasks;
 
     public Long getId() {
