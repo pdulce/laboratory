@@ -23,23 +23,30 @@ public class GitHubService {
                 return;
             }
             this.tareas = new ArrayList<>();
-            JavaParserService javaParserService = new JavaParserService();
-            List<GHContent> ghDirContent = repository.getDirectoryContent("src/");
-            ghDirContent.forEach((ghContent -> {
-                try {
-                    if (ghContent.isFile() && ghContent.getName().endsWith("java")) {
-                        Tarea tarea = javaParserService.generateTestClassForJavaFile(ghContent.read());
-                        tareas.add(tarea);
-                    }
-                } catch (IOException e) {
-                    throw new RuntimeException(e);
-                }
-            }));
+            scanMainDir("src/", repository, this.tareas);
             this.bytesOfZipped = ZipUtil.generarZipDesdeTareas(tareas);
 
         } catch (IOException e) {
             e.printStackTrace();
         }
+    }
+
+    private void scanMainDir(final String baseDir,
+                             final GHRepository repository, final List<Tarea> tareas) throws IOException {
+        JavaParserService javaParserService = new JavaParserService();
+        List<GHContent> ghDirContent = repository.getDirectoryContent(baseDir);
+        ghDirContent.forEach((ghContent -> {
+            try {
+                if (ghContent.isFile() && ghContent.getName().endsWith("java")) {
+                    Tarea tarea = javaParserService.generateTestClassForJavaFile(ghContent.read());
+                    tareas.add(tarea);
+                } else if (ghContent.isDirectory()) {
+                    scanMainDir(baseDir.concat("/").concat(ghContent.getName()), repository, tareas);
+                }
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
+        }));
     }
 
     private void scanDir(final GHContent item, final List<GHContent> lista) {
