@@ -1,10 +1,6 @@
 pipeline {
     agent any
 
-    tools {
-         jdk 'openjdk-17.0.8.1'
-    }
-
     stages {
         stage('Clean Workspace') {
                 steps {
