@@ -34,8 +34,8 @@ public class GitHubService {
                 System.out.println("Error al acceder al repositorio");
                 return;
             }
-            this.tareas = scanMainDir("src", repository);
-            this.bytesOfZipped = ZipUtil.generarZipDesdeTareas(tareas);
+            this.tareas = scanMainDir("src/main/java", repository); // queda fuera application.yml..
+            this.bytesOfZipped = new ZipUtil().generarZipDesdeTareas(tareas);
             this.tareaRepository.saveAll(this.tareas);
 
         } catch (IOException e) {
@@ -48,7 +48,7 @@ public class GitHubService {
         try {
             List<GHContent> ghDirContent = repository.getDirectoryContent(baseDir);
             ghDirContent.forEach((ghContent -> {
-                listaTareas.add(scanDirectory(baseDir.concat("/").concat(ghContent.getName()), repository,
+                listaTareas.add(scanRecursiveDirectory(baseDir.concat("/").concat(ghContent.getName()), repository,
                         ghContent));
             }
             ));
@@ -59,7 +59,7 @@ public class GitHubService {
         return listaTareas;
     }
 
-    private Tarea scanDirectory(final String baseDir, final GHRepository repository, final GHContent item) {
+    private Tarea scanRecursiveDirectory(final String baseDir, final GHRepository repository, final GHContent item) {
 
         if (item.isFile()) {
             //condicion de parada y retorno
@@ -67,8 +67,13 @@ public class GitHubService {
                 //me creo y me retorno para que me capture el padre invocador
                 try {
                     Tarea tarea = new JavaParserService().generateTestClassForJavaFile(item.read());
-                    tarea.setFolder(baseDir); //baseDir parent
-                    return tarea;
+                    if (tarea != null) {
+                        tarea.setFolder(baseDir); //baseDir parent
+                        return tarea;
+                    } else {
+                        return null;
+                    }
+
                 } catch (IOException ioExc) {
                     ioExc.printStackTrace();
                     return null;
@@ -87,7 +92,7 @@ public class GitHubService {
             try {
                 List<GHContent> ghDirContent = repository.getDirectoryContent(baseDir);
                 ghDirContent.forEach((ghContent -> {
-                    Tarea taskChild = scanDirectory(baseDir.concat("/").concat(ghContent.getName()), repository,
+                    Tarea taskChild = scanRecursiveDirectory(baseDir.concat("/").concat(ghContent.getName()), repository,
                             ghContent);
                     if (taskChild != null) {
                         tareaFolder.getChildrenTasks().add(taskChild);

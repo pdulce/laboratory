@@ -10,24 +10,22 @@ import java.util.zip.ZipOutputStream;
 
 public class ZipUtil {
 
-    public static byte[] generarZipDesdeTareas(List<Tarea> tareas) {
+    public byte[] generarZipDesdeTareas(List<Tarea> tareas) {
 
         try (ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
             ZipOutputStream zipOutputStream = new ZipOutputStream(byteArrayOutputStream)) {
-            for (Tarea tarea : tareas) {
-                // Crear una entrada en el archivo Zip para cada tarea
-                if (tarea.getIsGenerateToZip() == 1) {
-                    String nombreArchivo = tarea.getName(); // Define el nombre del archivo basado en los datos de la tarea
-                    ZipEntry zipEntry = new ZipEntry(nombreArchivo);
-                    // Agregar la entrada al archivo Zip
-                    zipOutputStream.putNextEntry(zipEntry);
-                    // Agregar el contenido de la tarea al archivo Zip (puedes ajustar esto según tus necesidades)
-                    String contenidoTarea = tarea.getContents(); // Define el contenido del archivo basado en los datos de la tarea
-                    zipOutputStream.write(contenidoTarea.getBytes());
-                    // Cerrar la entrada actual
-                    zipOutputStream.closeEntry();
+
+            String testRootFolder = "test/java"; // Cambia el nombre de la carpeta según tus necesidades
+            ZipEntry folderEntry = new ZipEntry(testRootFolder + "/");
+            zipOutputStream.putNextEntry(folderEntry);
+            tareas.forEach((task) -> {
+                try {
+                    scanRecursiveTreeOfTasks(task, zipOutputStream);
+                } catch (IOException e) {
+                    throw new RuntimeException(e);
                 }
-            }
+            });
+
             // Cerrar el archivo Zip
             zipOutputStream.finish();
             return byteArrayOutputStream.toByteArray();
@@ -37,6 +35,27 @@ public class ZipUtil {
             e.printStackTrace();
             return null;
         }
+    }
+
+    private ZipEntry scanRecursiveTreeOfTasks(final Tarea tarea, final ZipOutputStream zipOutputStream) throws IOException {
+        ZipEntry zipEntry = null;
+        if (tarea.getIsGenerateToZip() == 1 && tarea.getType().contentEquals("CLASS")) { //condicion de parada
+            zipEntry = new ZipEntry(tarea.getName());
+            zipOutputStream.putNextEntry(zipEntry); // Agregar la entrada al archivo Zip
+            zipOutputStream.write(tarea.getContents().getBytes()); // Agregar el contenido de la tarea al archivo Zip
+            zipOutputStream.closeEntry(); // Cerrar la entrada actual
+        } else if (tarea.getIsGenerateToZip() == 1 && !tarea.getChildrenTasks().isEmpty()) { // hacer llamada recursiva
+            zipEntry = new ZipEntry(tarea.getName() + "/"); // Define el nombre de la carpeta
+            zipOutputStream.putNextEntry(zipEntry); // Agregar la entrada al archivo Zip
+            tarea.getChildrenTasks().forEach((child) ->{
+                try {
+                    scanRecursiveTreeOfTasks(child, zipOutputStream);
+                } catch (IOException e) {
+                    throw new RuntimeException(e);
+                }
+            });
+        }
+        return zipEntry;
     }
 
 }
