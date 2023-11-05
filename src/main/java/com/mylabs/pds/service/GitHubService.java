@@ -16,7 +16,7 @@ import java.util.List;
 public class GitHubService {
     private byte[] bytesOfZipped;
     private List<Tarea> tareas;
-    //private static final String token = "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";
+
     @Autowired
     private TareaRepository tareaRepository;
 
