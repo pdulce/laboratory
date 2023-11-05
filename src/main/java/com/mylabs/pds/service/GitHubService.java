@@ -1,6 +1,7 @@
 package com.mylabs.pds.service;
 
 import com.mylabs.pds.model.Tarea;
+import com.mylabs.pds.repository.ConfigRepository;
 import com.mylabs.pds.repository.TareaRepository;
 import com.mylabs.pds.utils.ZipUtil;
 import org.kohsuke.github.GHContent;
@@ -15,12 +16,17 @@ import java.util.List;
 public class GitHubService {
     private byte[] bytesOfZipped;
     private List<Tarea> tareas;
-    private static final String token = "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";
+    //private static final String token = "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";
     @Autowired
     private TareaRepository tareaRepository;
 
+    @Autowired
+    private ConfiguracionService configuracionService;
+
     public GitHubService() {
         try {
+            String token = this.configuracionService.getById(1L) == null ? "unknown"
+                    : this.configuracionService.getById(1L).getCodigo();
             GitHub github = GitHub.connectUsingOAuth(token);
             GHRepository repository = github.getUser("pdulce").getRepository("laboratory");
             if (repository == null) {

@@ -32,12 +32,9 @@ public class TestClassGenerator {
             ClassOrInterfaceDeclaration testClassDeclaration = testClass.addClass(className + "Test");
             testClassDeclaration.addAnnotation("SpringBootTest");
             testClassDeclaration.addAnnotation("DataJpaTest");
-
-            // Genera métodos de prueba para los métodos públicos
-            for (MethodDeclaration method : cu.findAll(MethodDeclaration.class)) {
-                if (!method.isAbstract() && method.isFinal() &&
-                        method.getModifiers().contains(Modifier.publicModifier()) &&
-                        method.hasJavaDocComment() && method.isFinal()) {
+            cu.findAll(MethodDeclaration.class).forEach((method -> {
+                if (!method.isAbstract() && //method.isFinal() &&
+                        method.getModifiers().contains(Modifier.publicModifier())) {
                     MethodDeclaration methodDeclaration = generateTestMethod(method.getNameAsString());
                     testClassDeclaration.addMember(methodDeclaration);
                     Tarea newTask = new Tarea();
@@ -46,7 +43,8 @@ public class TestClassGenerator {
                     newTask.setContents(methodDeclaration.toString());
                     childrenTasks.add(newTask);
                 }
-            }
+            }));
+
             // Puedes imprimir el contenido de la clase de prueba o escribirlo en un archivo
             System.out.println(testClass.toString());
             tarea = new Tarea();

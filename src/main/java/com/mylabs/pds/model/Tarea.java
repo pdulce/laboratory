@@ -20,6 +20,9 @@ public class Tarea {
     private String name;
 
     @Column
+    private String type; //TESTFOLDER, TESTCLASS, TESTMETHOD
+
+    @Column
     private Integer isGenerateToZip;
 
     @Column
