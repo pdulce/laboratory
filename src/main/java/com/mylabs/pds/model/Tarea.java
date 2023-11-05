@@ -20,10 +20,21 @@ public class Tarea {
     private String name;
 
     @Column
+    private String folder;
+
+    @Column
     private String type; //TESTFOLDER, TESTCLASS, TESTMETHOD
 
     @Column
     private Integer isGenerateToZip;
+
+    public String getFolder() {
+        return folder;
+    }
+
+    public void setFolder(String folder) {
+        this.folder = folder;
+    }
 
     @Column
     private String contents;
@@ -55,6 +66,14 @@ public class Tarea {
 
     public String getContents() {
         return contents;
+    }
+
+    public String getType() {
+        return type;
+    }
+
+    public void setType(String type) {
+        this.type = type;
     }
 
     public void setContents(String contents) {

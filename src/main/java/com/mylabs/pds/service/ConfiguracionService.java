@@ -1,9 +1,7 @@
 package com.mylabs.pds.service;
 
 import com.mylabs.pds.model.Configuracion;
-import com.mylabs.pds.model.Version;
-import com.mylabs.pds.repository.ConfigRepository;
-import com.mylabs.pds.repository.VersionRepository;
+import com.mylabs.pds.repository.ConfiguracionRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -14,7 +12,7 @@ import java.util.List;
 public class ConfiguracionService {
 
     @Autowired
-    private ConfigRepository configRepository;
+    private ConfiguracionRepository configRepository;
 
     public final List<Configuracion> getAllConfiguraciones() {
 

@@ -38,6 +38,7 @@ public class TestClassGenerator {
                     MethodDeclaration methodDeclaration = generateTestMethod(method.getNameAsString());
                     testClassDeclaration.addMember(methodDeclaration);
                     Tarea newTask = new Tarea();
+                    newTask.setType("METHOD");
                     newTask.setIsGenerateToZip(0);
                     newTask.setName(method.getNameAsString());
                     newTask.setContents(methodDeclaration.toString());
@@ -48,6 +49,7 @@ public class TestClassGenerator {
             // Puedes imprimir el contenido de la clase de prueba o escribirlo en un archivo
             System.out.println(testClass.toString());
             tarea = new Tarea();
+            tarea.setType("CLASS");
             tarea.setName(className.concat("Test.java"));
             tarea.setContents(testClass.toString());
             tarea.setChildrenTasks(childrenTasks);
