@@ -39,8 +39,7 @@ public class TestClassGenerator {
                         testClassDeclaration.addMember(methodDeclaration);
                         Tarea newTask = new Tarea();
                         newTask.setType("METHOD");
-                        newTask.setIsGenerateToZip(0);
-                        newTask.setName(method.getNameAsString());
+                        newTask.setTestName(method.getNameAsString());
                         newTask.setContents(methodDeclaration.toString());
                         childrenTasks.add(newTask);
                     }
@@ -50,10 +49,9 @@ public class TestClassGenerator {
                 System.out.println(testClass.toString());
                 tarea = new Tarea();
                 tarea.setType("CLASS");
-                tarea.setName(className.concat("Test.java"));
+                tarea.setTestName(className.concat("Test.java"));
                 tarea.setContents(testClass.toString());
                 tarea.setChildrenTasks(childrenTasks);
-                tarea.setIsGenerateToZip(1);
             } catch (Throwable exc) {
                 exc.printStackTrace();
                 return null;

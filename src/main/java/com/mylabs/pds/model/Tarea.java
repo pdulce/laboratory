@@ -17,26 +17,24 @@ public class Tarea {
     private Long id;
 
     @Column
-    private String name;
+    private String testName;
 
     @Column
-    private String folder;
+    private String originPathToTest;
 
     @Column
     private String type; //TESTFOLDER, TESTCLASS, TESTMETHOD
 
-    @Column
-    private Integer isGenerateToZip;
 
-    public String getFolder() {
-        return folder;
+    public String getOriginPathToTest() {
+        return originPathToTest;
     }
 
-    public void setFolder(String folder) {
-        this.folder = folder;
+    public void setOriginPathToTest(String originPathToTest) {
+        this.originPathToTest = originPathToTest;
     }
 
-    @Column
+    @Column(columnDefinition = "varchar(5000)")
     private String contents;
 
     @ManyToOne
@@ -56,12 +54,12 @@ public class Tarea {
         this.id = id;
     }
 
-    public String getName() {
-        return name;
+    public String getTestName() {
+        return testName;
     }
 
-    public void setName(String name) {
-        this.name = name;
+    public void setTestName(String testName) {
+        this.testName = testName;
     }
 
     public String getContents() {
@@ -88,13 +86,6 @@ public class Tarea {
         this.parentTaskId = parentTaskId;
     }
 
-    public Integer getIsGenerateToZip() {
-        return isGenerateToZip;
-    }
-
-    public void setIsGenerateToZip(Integer isGenerateToZip) {
-        this.isGenerateToZip = isGenerateToZip;
-    }
 
     public List<Tarea> getChildrenTasks() {
         return childrenTasks;

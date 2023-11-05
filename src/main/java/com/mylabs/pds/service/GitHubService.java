@@ -68,7 +68,7 @@ public class GitHubService {
                 try {
                     Tarea tarea = new JavaParserService().generateTestClassForJavaFile(item.read());
                     if (tarea != null) {
-                        tarea.setFolder(baseDir); //baseDir parent
+                        tarea.setOriginPathToTest(baseDir); //baseDir parent
                         return tarea;
                     } else {
                         return null;
@@ -84,10 +84,9 @@ public class GitHubService {
         } else { //soy una carpeta
             // me creo y creo una lista de hijos que lleno con llamadas recursivas de cada uno
             Tarea tareaFolder = new Tarea();
-            tareaFolder.setFolder(baseDir); //baseDir parent
+            tareaFolder.setOriginPathToTest(baseDir); //baseDir parent
             tareaFolder.setType("FOLDER");
-            tareaFolder.setName(item.getName());
-            tareaFolder.setIsGenerateToZip(1);
+            tareaFolder.setTestName(item.getName());
             tareaFolder.setChildrenTasks(new ArrayList<>());
             try {
                 List<GHContent> ghDirContent = repository.getDirectoryContent(baseDir);
