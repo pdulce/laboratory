@@ -16,12 +16,12 @@ public class ZipUtil {
         try (ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
             ZipOutputStream zipOutputStream = new ZipOutputStream(byteArrayOutputStream)) {
 
-            String testRootFolder = "test/java"; // Cambia el nombre de la carpeta según tus necesidades
-            ZipEntry folderEntry = new ZipEntry(testRootFolder + "/");
+            String testRootFolderPath = "test/java/"; // Cambia el nombre de la carpeta según tus necesidades
+            ZipEntry folderEntry = new ZipEntry(testRootFolderPath);
             zipOutputStream.putNextEntry(folderEntry);
             tareas.forEach((task) -> {
                 try {
-                    scanRecursiveTreeOfTasks(task, zipOutputStream);
+                    scanRecursiveTreeOfTasks(testRootFolderPath, task, zipOutputStream);
                 } catch (IOException e) {
                     throw new RuntimeException(e);
                 }
@@ -29,20 +29,12 @@ public class ZipUtil {
 
             // Cerrar el archivo Zip
             zipOutputStream.finish();
-            // escribir este array en un path del servidor para depurar
-            String filePath = "C:\\temp\\testSuite.zip"; // Reemplaza con la ruta y nombre de archivo deseado en el servidor
-
-            // Abrir un FileOutputStream para el archivo en el servidor
+            // escribir este array en un path del servidor a efectos de depuración
+            String filePath = "C:\\temp\\testSuite.zip";
             FileOutputStream fileOutputStream = new FileOutputStream(filePath);
-
-            // Escribir el contenido del byte array en el archivo
             fileOutputStream.write(byteArrayOutputStream.toByteArray());
-
-            // Cerrar el FileOutputStream para asegurarse de que los cambios se guarden
             fileOutputStream.close();
-
             System.out.println("Archivo guardado con éxito en el servidor.");
-
             return byteArrayOutputStream.toByteArray();
 
         } catch (IOException e) {
@@ -52,25 +44,25 @@ public class ZipUtil {
         }
     }
 
-    private ZipEntry scanRecursiveTreeOfTasks(final Tarea tarea, final ZipOutputStream zipOutputStream) throws IOException {
-        ZipEntry zipEntry = null;
+    private void scanRecursiveTreeOfTasks(final String parentDirPath, final Tarea tarea,
+                                              final ZipOutputStream zipOutputStream) throws IOException {
         if (tarea.getType().contentEquals("CLASS")) { //condicion de parada
-            zipEntry = new ZipEntry(tarea.getTestName());
+            ZipEntry zipEntry = new ZipEntry(parentDirPath + tarea.getTestName());
             zipOutputStream.putNextEntry(zipEntry); // Agregar la entrada al archivo Zip
             zipOutputStream.write(tarea.getContents().getBytes()); // Agregar el contenido de la tarea al archivo Zip
             zipOutputStream.closeEntry(); // Cerrar la entrada actual
-        } else if (tarea.getType().contentEquals("FOLDER") && !tarea.getChildrenTasks().isEmpty()) { // hacer llamada recursiva
-            zipEntry = new ZipEntry(tarea.getTestName() + "/"); // Define el nombre de la carpeta
+        } else if (tarea.getType().contentEquals("FOLDER") && !tarea.getChildrenTasks().isEmpty()) {
+            // hacer llamada recursiva
+            String folderPath = parentDirPath + tarea.getTestName() + "/";
+            ZipEntry zipEntry = new ZipEntry(folderPath); // Define el nombre de la carpeta
             zipOutputStream.putNextEntry(zipEntry); // Agregar la entrada al archivo Zip
             tarea.getChildrenTasks().forEach((child) ->{
                 try {
-                    scanRecursiveTreeOfTasks(child, zipOutputStream);
+                    scanRecursiveTreeOfTasks(folderPath, child, zipOutputStream);
                 } catch (IOException e) {
                     throw new RuntimeException(e);
                 }
             });
         }
-        return zipEntry;
     }
-
 }

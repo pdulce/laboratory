@@ -1,10 +1,11 @@
-package com.mylabs.pds.service;
+package com.mylabs.pds.utils;
 
 import com.github.javaparser.StaticJavaParser;
 import com.github.javaparser.ast.CompilationUnit;
 import com.github.javaparser.ast.Modifier;
 import com.github.javaparser.ast.body.MethodDeclaration;
 import com.mylabs.pds.model.Tarea;
+import com.mylabs.pds.utils.TestClassGenerator;
 
 import java.io.InputStream;
 import java.util.List;

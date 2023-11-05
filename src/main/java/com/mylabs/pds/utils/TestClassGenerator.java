@@ -1,4 +1,4 @@
-package com.mylabs.pds.service;
+package com.mylabs.pds.utils;
 
 import com.github.javaparser.ast.CompilationUnit;
 import com.github.javaparser.ast.Modifier;
@@ -39,7 +39,7 @@ public class TestClassGenerator {
                         testClassDeclaration.addMember(methodDeclaration);
                         Tarea newTask = new Tarea();
                         newTask.setType("METHOD");
-                        newTask.setTestName(method.getNameAsString());
+                        newTask.setTestName("test" + method.getNameAsString());
                         newTask.setContents(methodDeclaration.toString());
                         childrenTasks.add(newTask);
                     }
