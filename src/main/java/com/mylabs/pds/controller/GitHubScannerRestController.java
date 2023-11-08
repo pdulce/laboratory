@@ -24,7 +24,7 @@ public class GitHubScannerRestController {
 
 
     @GetMapping("/scanGitRepo")
-    public ResponseEntity<String> scanGitRepo() {
+    public List<Tarea> scanGitRepo() {
         return gitHubViaApiRest.scanRepository("pdulce", "laboratory");
     }
 
