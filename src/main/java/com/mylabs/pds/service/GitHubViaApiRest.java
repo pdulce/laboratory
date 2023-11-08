@@ -4,6 +4,8 @@ import com.mylabs.pds.model.Tarea;
 import com.mylabs.pds.repository.ConfiguracionRepository;
 import com.mylabs.pds.repository.TareaRepository;
 import com.mylabs.pds.utils.GitHubContent;
+import com.mylabs.pds.utils.JavaParserService;
+import com.mylabs.pds.utils.ZipUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.web.client.RestTemplateBuilder;
 import org.springframework.http.HttpEntity;
@@ -23,7 +25,6 @@ public class GitHubViaApiRest {
 
     private static final String GITHUB_API_URL = "https://api.github.com";
     private RestTemplate restTemplate;
-    private byte[] bytesOfZipped;
 
     @Autowired
     private TareaRepository tareaRepository;
@@ -51,29 +52,42 @@ public class GitHubViaApiRest {
         ResponseEntity<GitHubContent[]> responseInner = restTemplate.exchange(newGithubApiUrl,
                 HttpMethod.GET, entity, GitHubContent[].class);
         GitHubContent[] contentsInner = responseInner.getBody();
+        List<Tarea> tareas = new ArrayList<>();
         for (GitHubContent contentItem : contentsInner) {
             // llamada recursiva para descubrir los fuentes java
-            scanDir(contentItem, baseUriPattern, owner, repository, initDirBase, branch, entity);
+            tareas.add(scanDir(contentItem, baseUriPattern, owner, repository, initDirBase, branch, entity));
         }
-
-        List<Tarea> tareas = new ArrayList<>();
-        //meter logica que ya tienes hecha en otras clases
+        byte[] bytesOfZipped = new ZipUtil().generarZipDesdeTareas(tareas);
+        tareas = this.tareaRepository.saveAll(tareas);
         return tareas;
     }
 
-    private void scanDir(final GitHubContent content, final String baseUriPattern,
+    private Tarea scanDir(final GitHubContent content, final String baseUriPattern,
                          final String owner, final String repository,
             final String initDirBase, final String branch, final HttpEntity<String> entity) {
-
         if (content.getType().equals("file") && content.getName().endsWith(".java")) {
             // El archivo es un archivo Java, lee su contenido
             String fileContentUrl = content.getDownload_url();
             ResponseEntity<String> fileResponse = restTemplate.exchange(fileContentUrl,
                     HttpMethod.GET, entity, String.class);
             String javaFileContent = fileResponse.getBody();
-            System.out.println("Contenido del archivo " + content.getName() + ":\n" + javaFileContent);
+            //System.out.println("Contenido del archivo " + content.getName() + ":\n" + javaFileContent);
+            Tarea tarea = new JavaParserService().generateTestClassForJavaFile(javaFileContent);
+            if (tarea != null) {
+                tarea.setOriginPathToTest(initDirBase + "/" + content.getName()); //baseDir parent
+                return tarea;
+            } else {
+                return null;
+            }
         } else {
-            //RestTemplate restTemplate = new RestTemplate();
+
+            // me creo y creo una lista de hijos que lleno con llamadas recursivas de cada uno
+            Tarea tareaFolder = new Tarea();
+            tareaFolder.setOriginPathToTest(initDirBase + "/" + content.getName()); //baseDir parent
+            tareaFolder.setType("FOLDER");
+            tareaFolder.setTestName(content.getName());
+            tareaFolder.setChildrenTasks(new ArrayList<>());
+
             System.out.println("el archivo "+  content.getName() + " es un " + content.getType()
                     + "...lanzo una llamada recursiva");
             String newGithubApiUrl = String.format(baseUriPattern, owner, repository,
@@ -82,9 +96,13 @@ public class GitHubViaApiRest {
                     HttpMethod.GET, entity, GitHubContent[].class);
             GitHubContent[] contentsInner = responseInner.getBody();
             for (GitHubContent contentItem : contentsInner) {
-                scanDir(contentItem, baseUriPattern, owner, repository,
+                Tarea tareaChild = scanDir(contentItem, baseUriPattern, owner, repository,
                         initDirBase  + "/" + content.getName(), branch, entity);
+                if (tareaChild != null) {
+                    tareaFolder.getChildrenTasks().add(tareaChild);
+                }
             }
+            return tareaFolder;
         }
     }
 

@@ -24,6 +24,18 @@ public class JavaParserService {
         return tarea;
     }
 
+    public Tarea generateTestClassForJavaFile(String code) {
+        Tarea tarea = null;
+        CompilationUnit cu = StaticJavaParser.parse(code);
+        if (cu != null) {
+            // Verificar si la clase tiene métodos públicos
+            if (containsPublicMethods(cu)) {
+                tarea = generateTestClass(cu);
+            }
+        }
+        return tarea;
+    }
+
     private boolean containsPublicMethods(CompilationUnit cu) {
         if (cu != null) {
             // Obtén todas las declaraciones de métodos en la clase

@@ -40,6 +40,7 @@ public class TestClassGenerator {
                         Tarea newTask = new Tarea();
                         newTask.setType("METHOD");
                         newTask.setTestName("test" + method.getNameAsString());
+                        newTask.setOriginPathToTest(method.getNameAsString());
                         newTask.setContents(methodDeclaration.toString());
                         childrenTasks.add(newTask);
                     }
