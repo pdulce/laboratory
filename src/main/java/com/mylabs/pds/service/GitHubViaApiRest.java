@@ -73,7 +73,7 @@ public class GitHubViaApiRest {
             String javaFileContent = fileResponse.getBody();
             System.out.println("Contenido del archivo " + content.getName() + ":\n" + javaFileContent);
         } else {
-            RestTemplate restTemplate = new RestTemplate();
+            //RestTemplate restTemplate = new RestTemplate();
             System.out.println("el archivo "+  content.getName() + " es un " + content.getType()
                     + "...lanzo una llamada recursiva");
             String newGithubApiUrl = String.format(baseUriPattern, owner, repository,
