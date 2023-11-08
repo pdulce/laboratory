@@ -1,7 +1,10 @@
 package com.mylabs.pds.utils;
 
 import javax.annotation.processing.AbstractProcessor;
+import javax.annotation.processing.Filer;
+import javax.annotation.processing.ProcessingEnvironment;
 import javax.annotation.processing.RoundEnvironment;
+import javax.lang.model.SourceVersion;
 import javax.tools.*;
 import javax.tools.JavaCompiler.CompilationTask;
 import java.io.*;
@@ -24,33 +27,19 @@ public class JavaCodeAnalyzer {
 
         Iterable<? extends JavaFileObject> compilationUnits = Arrays.asList(sourceFile);
 
-        CompilationTask task = compiler.getTask(null, fileManager, null,
-                null, null, compilationUnits);
+        DiagnosticCollector<JavaFileObject> diagnostics = new DiagnosticCollector<>();
+        CompilationTask task = compiler.getTask(null, fileManager, diagnostics, null, null, compilationUnits);
 
-        SourcePositions sourcePositions = Trees.instance(task).getSourcePositions();
-        //Elements elements = task.getElements();
-        //Types types = task.getTypes();
-        task.setProcessors(Collections.singleton(new AbstractProcessor() {
-            @Override
-            public boolean process(Set<? extends TypeElement> annotations, RoundEnvironment roundEnv) {
-                for (Element element : roundEnv.getRootElements()) {
-                    if (element.getKind() == ElementKind.CLASS) {
-                        TypeElement typeElement = (TypeElement) element;
-                        System.out.println("Clase: " + typeElement.getSimpleName());
+        task.setProcessors(List.of(new PackageUsageProcessor()));
 
-                        for (Element enclosedElement : typeElement.getEnclosedElements()) {
-                            if (enclosedElement.getKind() == ElementKind.METHOD) {
-                                ExecutableElement methodElement = (ExecutableElement) enclosedElement;
-                                System.out.println("Método: " + methodElement.getSimpleName());
-                            }
-                        }
-                    }
-                }
-                return true;
+        boolean success = task.call();
+
+        if (!success) {
+            System.out.println("Error en el análisis");
+            for (javax.tools.Diagnostic<?> diagnostic : diagnostics.getDiagnostics()) {
+                System.out.println(diagnostic);
             }
-        }));
-
-        task.call();
+        }
 
     }
 
@@ -67,6 +56,58 @@ public class JavaCodeAnalyzer {
         @Override
         public CharSequence getCharContent(boolean ignoreEncodingErrors) {
             return code;
+        }
+    }
+
+    public static class PackageUsageProcessor extends AbstractProcessor {
+
+        private Elements elementUtils;
+        private Types typeUtils;
+        private Filer filer;
+
+        @Override
+        public synchronized void init(ProcessingEnvironment processingEnv) {
+            super.init(processingEnv);
+            elementUtils = processingEnv.getElementUtils();
+            typeUtils = processingEnv.getTypeUtils();
+            filer = processingEnv.getFiler();
+        }
+
+        @Override
+        public Set<String> getSupportedAnnotationTypes() {
+            return Set.of("*");
+        }
+
+        @Override
+        public SourceVersion getSupportedSourceVersion() {
+            return SourceVersion.latest();
+        }
+
+        @Override
+        public boolean process(Set<? extends TypeElement> annotations, RoundEnvironment roundEnv) {
+            for (Element element : roundEnv.getRootElements()) {
+                if (element.getKind() == ElementKind.CLASS) {
+                    TypeElement classElement = (TypeElement) element;
+                    PackageElement packageElement = elementUtils.getPackageOf(classElement);
+
+                    System.out.println("Clase: " + classElement.getQualifiedName());
+                    System.out.println("Paquete: " + packageElement.getQualifiedName());
+
+                    List<String> publicMethods = new ArrayList<>();
+                    for (Element enclosedElement : element.getEnclosedElements()) {
+                        if (enclosedElement.getKind() == ElementKind.METHOD
+                                && ((ExecutableElement) enclosedElement).getModifiers().contains(Modifier.PUBLIC)) {
+                            publicMethods.add(enclosedElement.toString());
+                        }
+                    }
+
+                    System.out.println("Métodos públicos:");
+                    for (String method : publicMethods) {
+                        System.out.println(method);
+                    }
+                }
+            }
+            return true;
         }
     }
 }
