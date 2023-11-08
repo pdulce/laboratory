@@ -39,7 +39,7 @@ public class TestClassGenerator {
                         testClassDeclaration.addMember(methodDeclaration);
                         Tarea newTask = new Tarea();
                         newTask.setType("METHOD");
-                        newTask.setTestName("test" + method.getNameAsString());
+                        newTask.setTestName("test_" + method.getNameAsString());
                         newTask.setOriginPathToTest(method.getNameAsString());
                         newTask.setContents(methodDeclaration.toString());
                         childrenTasks.add(newTask);
