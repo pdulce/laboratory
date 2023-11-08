@@ -4,6 +4,7 @@ import com.mylabs.pds.model.Tarea;
 import com.mylabs.pds.repository.ConfiguracionRepository;
 import com.mylabs.pds.repository.TareaRepository;
 import com.mylabs.pds.utils.GitHubContent;
+import com.mylabs.pds.utils.JavaCodeAnalyzer;
 import com.mylabs.pds.utils.JavaParserService;
 import com.mylabs.pds.utils.ZipUtil;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -75,6 +76,8 @@ public class GitHubViaApiRest {
             Tarea tarea = new JavaParserService().generateTestClassForJavaFile(javaFileContent);
             if (tarea != null) {
                 tarea.setOriginPathToTest(initDirBase + "/" + content.getName()); //baseDir parent
+                new JavaCodeAnalyzer().analyzeJavaCode(content.getName().substring(0, content.getName().indexOf(".")),
+                        javaFileContent);
                 return tarea;
             } else {
                 return null;

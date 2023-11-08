@@ -5,6 +5,7 @@ import javax.annotation.processing.RoundEnvironment;
 import javax.tools.*;
 import javax.tools.JavaCompiler.CompilationTask;
 import java.io.*;
+import java.net.URI;
 import java.util.*;
 import javax.lang.model.element.*;
 import com.sun.source.tree.*;
@@ -13,12 +14,18 @@ import javax.lang.model.util.Elements;
 import javax.lang.model.util.Types;
 
 public class JavaCodeAnalyzer {
-    public void analyzeJavaCode(String javaFilePath) throws IOException {
+    public void analyzeJavaCode(final String javaclassName, final String javaSourceCode) {
         JavaCompiler compiler = ToolProvider.getSystemJavaCompiler();
-        StandardJavaFileManager fileManager = compiler.getStandardFileManager(null, null, null);
+        StandardJavaFileManager fileManager = compiler.getStandardFileManager(null,
+                null, null);
 
-        Iterable<? extends JavaFileObject> compilationUnits = fileManager.getJavaFileObjects(new File(javaFilePath));
-        CompilationTask task = compiler.getTask(null, fileManager, null, null, null, compilationUnits);
+        // Crear un objeto de archivo fuente a partir del código fuente proporcionado
+        JavaFileObject sourceFile = new JavaSourceFromString(javaclassName, javaSourceCode);
+
+        Iterable<? extends JavaFileObject> compilationUnits = Arrays.asList(sourceFile);
+
+        CompilationTask task = compiler.getTask(null, fileManager, null,
+                null, null, compilationUnits);
 
         SourcePositions sourcePositions = Trees.instance(task).getSourcePositions();
         //Elements elements = task.getElements();
@@ -47,13 +54,19 @@ public class JavaCodeAnalyzer {
 
     }
 
-    public static void main(String[] args) {
-        JavaCodeAnalyzer analyzer = new JavaCodeAnalyzer();
-        String javaFilePath = "Ruta/a/TuArchivo.java"; // Ruta al archivo Java que deseas analizar
-        try {
-            analyzer.analyzeJavaCode(javaFilePath);
-        } catch (IOException e) {
-            e.printStackTrace();
+    // Clase personalizada para representar un archivo fuente desde una cadena de código
+    public static class JavaSourceFromString extends SimpleJavaFileObject {
+        private final String code;
+
+        protected JavaSourceFromString(String name, String code) {
+            super(URI.create("string:///" + name.replace('.', '/') + Kind.SOURCE.extension),
+                    Kind.SOURCE);
+            this.code = code;
+        }
+
+        @Override
+        public CharSequence getCharContent(boolean ignoreEncodingErrors) {
+            return code;
         }
     }
 }

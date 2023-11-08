@@ -34,7 +34,7 @@ public class Tarea {
         this.originPathToTest = originPathToTest;
     }
 
-    @Column(columnDefinition = "varchar(5000)")
+    @Column(columnDefinition = "varchar(2000)")
     private String contents;
 
     @ManyToOne
