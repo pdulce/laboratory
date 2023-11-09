@@ -3,10 +3,7 @@ package com.mylabs.pds.service;
 import com.mylabs.pds.model.Tarea;
 import com.mylabs.pds.repository.ConfiguracionRepository;
 import com.mylabs.pds.repository.TareaRepository;
-import com.mylabs.pds.utils.GitHubContent;
-import com.mylabs.pds.utils.JavaCodeAnalyzer;
-import com.mylabs.pds.utils.JavaParserService;
-import com.mylabs.pds.utils.ZipUtil;
+import com.mylabs.pds.utils.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.web.client.RestTemplateBuilder;
 import org.springframework.http.HttpEntity;
@@ -56,7 +53,7 @@ public class GitHubViaApiRest {
         List<Tarea> tareas = new ArrayList<>();
         for (GitHubContent contentItem : contentsInner) {
             // llamada recursiva para descubrir los fuentes java
-            tareas.add(scanDir(contentItem, baseUriPattern, owner, repository, initDirBase, branch, entity));
+            tareas.add(scanDir(null, baseUriPattern, owner, repository, initDirBase, branch, entity));
         }
         byte[] bytesOfZipped = new ZipUtil().generarZipDesdeTareas(tareas);
         tareas = this.tareaRepository.saveAll(tareas);
@@ -73,24 +70,20 @@ public class GitHubViaApiRest {
                     HttpMethod.GET, entity, String.class);
             String javaFileContent = fileResponse.getBody();
             //System.out.println("Contenido del archivo " + content.getName() + ":\n" + javaFileContent);
+            new GeneratorWithJavaAssist().generarSampleCode();
             Tarea tarea = new JavaParserService().generateTestClassForJavaFile(javaFileContent);
-            if (tarea != null) {
-                tarea.setOriginPathToTest(initDirBase + "/" + content.getName()); //baseDir parent
-                new JavaCodeAnalyzer().analyzeJavaCode(content.getName().substring(0, content.getName().indexOf(".")),
-                        javaFileContent);
-                return tarea;
-            } else {
-                return null;
-            }
+            Tarea tarea2 =
+                    new JavaCodeAnalyzer().analyzeJavaCode(content.getName().substring(0,
+                            content.getName().indexOf(".")), javaFileContent);
+            return tarea;
         } else {
-
             // me creo y creo una lista de hijos que lleno con llamadas recursivas de cada uno
             Tarea tareaFolder = new Tarea();
             tareaFolder.setOriginPathToTest(initDirBase + "/" + content.getName()); //baseDir parent
             tareaFolder.setType("FOLDER");
             tareaFolder.setTestName(content.getName());
             tareaFolder.setChildrenTasks(new ArrayList<>());
-
+            tareaFolder = this.tareaRepository.save(tareaFolder);
             System.out.println("el archivo "+  content.getName() + " es un " + content.getType()
                     + "...lanzo una llamada recursiva");
             String newGithubApiUrl = String.format(baseUriPattern, owner, repository,
