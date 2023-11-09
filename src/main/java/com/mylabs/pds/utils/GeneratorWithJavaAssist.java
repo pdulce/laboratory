@@ -23,6 +23,7 @@ import java.util.List;
 
 public class GeneratorWithJavaAssist implements IClassGenerator {
 
+    @Override
     public Tarea generateTestClassForJavaFile(InputStream inputStream) {
         try {
             return generateTestClassFrom(ClassPool.getDefault().makeClass(inputStream));
@@ -31,6 +32,7 @@ public class GeneratorWithJavaAssist implements IClassGenerator {
         }
     }
 
+    @Override
     public Tarea generateTestClassForJavaFile(String byteClassCode) {
         StringWriter stringWriter = new StringWriter();
         StringReader reader = new StringReader(byteClassCode);

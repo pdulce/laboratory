@@ -24,6 +24,7 @@ import java.util.List;
 
 public class GeneratorWithGitHubParser implements IClassGenerator {
 
+    @Override
     public Tarea generateTestClassForJavaFile(InputStream inputStream) {
         Tarea tarea = null;
         CompilationUnit cu = StaticJavaParser.parse(inputStream);
@@ -36,6 +37,7 @@ public class GeneratorWithGitHubParser implements IClassGenerator {
         return tarea;
     }
 
+    @Override
     public Tarea generateTestClassForJavaFile(String code) {
         Tarea tarea = null;
         CompilationUnit cu = StaticJavaParser.parse(code);
