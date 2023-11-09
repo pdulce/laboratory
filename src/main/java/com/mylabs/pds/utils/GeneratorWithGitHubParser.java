@@ -1,6 +1,7 @@
 package com.mylabs.pds.utils;
 
 import aj.org.objectweb.asm.Type;
+import com.github.javaparser.StaticJavaParser;
 import com.github.javaparser.ast.CompilationUnit;
 import com.github.javaparser.ast.Modifier;
 import com.github.javaparser.ast.body.ClassOrInterfaceDeclaration;
@@ -9,10 +10,49 @@ import com.github.javaparser.ast.body.TypeDeclaration;
 import com.github.javaparser.ast.stmt.BlockStmt;
 import com.mylabs.pds.model.Tarea;
 
+import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
 
-public class ClassGeneratorWithGitHubParser {
+public class GeneratorWithGitHubParser implements IClassGenerator {
+
+    public Tarea generateTestClassForJavaFile(InputStream inputStream) {
+        Tarea tarea = null;
+        CompilationUnit cu = StaticJavaParser.parse(inputStream);
+        if (cu != null) {
+            // Verificar si la clase tiene métodos públicos
+            if (containsPublicMethods(cu)) {
+                tarea = generateTestClass(cu);
+            }
+        }
+        return tarea;
+    }
+
+    public Tarea generateTestClassForJavaFile(String code) {
+        Tarea tarea = null;
+        CompilationUnit cu = StaticJavaParser.parse(code);
+        if (cu != null) {
+            // Verificar si la clase tiene métodos públicos
+            if (containsPublicMethods(cu)) {
+                tarea = generateTestClass(cu);
+            }
+        }
+        return tarea;
+    }
+
+    private boolean containsPublicMethods(CompilationUnit cu) {
+        if (cu != null) {
+            // Obtén todas las declaraciones de métodos en la clase
+            List<MethodDeclaration> methodDeclarations = cu.findAll(MethodDeclaration.class);
+            for (MethodDeclaration methodDeclaration : methodDeclarations) {
+                // Verifica si el método tiene el modificador "public"
+                if (methodDeclaration.getModifiers().contains(Modifier.publicModifier())) {
+                    return true; // Se encontró al menos un método público
+                }
+            }
+        }
+        return false; // No se encontraron métodos públicos
+    }
 
     public Tarea generateTestClass(final CompilationUnit cu) {
 

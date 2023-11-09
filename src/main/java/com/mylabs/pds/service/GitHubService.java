@@ -3,7 +3,7 @@ package com.mylabs.pds.service;
 import com.mylabs.pds.model.Tarea;
 import com.mylabs.pds.repository.ConfiguracionRepository;
 import com.mylabs.pds.repository.TareaRepository;
-import com.mylabs.pds.utils.JavaParserService;
+import com.mylabs.pds.utils.IClassGenerator;
 import com.mylabs.pds.utils.ZipUtil;
 import org.kohsuke.github.GHContent;
 import org.kohsuke.github.GHRepository;
@@ -17,47 +17,39 @@ import java.util.List;
 
 @Service
 public class GitHubService {
-    private byte[] bytesOfZipped;
-    private List<Tarea> tareas;
 
+    private static final String INIT_BASE_DIR = "/src/main/java";
     @Autowired
     private TareaRepository tareaRepository;
-
     @Autowired
     private ConfiguracionRepository configRepository;
 
-    private void initGitHubService() {
+    private IClassGenerator classGenerator;
+
+    public List<Tarea> scanRepository(final String owner, final String repositoryName,
+                                      final IClassGenerator classGenerator) {
+        this.classGenerator = classGenerator;
+        String token = this.configRepository.findById(1L).isPresent()
+                ? this.configRepository.findById(1L).get().getCodigo() : "unknown";
+        List<Tarea> tareas = new ArrayList<>();
         try {
-            String token = this.configRepository.findById(1L).isPresent() ? this.configRepository.findById(1L).get().getCodigo() : "unknown";
             GitHub github = GitHub.connectUsingOAuth(token);
-            GHRepository repository = github.getUser("pdulce").getRepository("laboratory");
+            GHRepository repository = github.getUser(owner).getRepository(repositoryName);
             if (repository == null) {
                 System.out.println("Error al acceder al repositorio");
-                return;
+                return null;
             }
-            this.tareas = scanMainDir("src/main/java", repository); // queda fuera application.yml..
-            this.bytesOfZipped = new ZipUtil().generarZipDesdeTareas(tareas);
-            this.tareaRepository.saveAll(this.tareas);
-
+            List<GHContent> ghDirContent = repository.getDirectoryContent(INIT_BASE_DIR);
+            for (GHContent ghContent : ghDirContent) {
+                tareas.add(scanRecursiveDirectory(INIT_BASE_DIR.concat("/").concat(ghContent.getName()),
+                        repository, ghContent));
+            }
+            byte[] bytesOfZipped = new ZipUtil().generarZipDesdeTareas(tareas);
+            tareas = this.tareaRepository.saveAll(tareas);
         } catch (IOException e) {
-            e.printStackTrace();
+            throw new RuntimeException(e);
         }
-    }
-
-    private List<Tarea> scanMainDir(final String baseDir, final GHRepository repository) {
-        List<Tarea> listaTareas = new ArrayList<>();
-        try {
-            List<GHContent> ghDirContent = repository.getDirectoryContent(baseDir);
-            ghDirContent.forEach((ghContent -> {
-                listaTareas.add(scanRecursiveDirectory(baseDir.concat("/").concat(ghContent.getName()), repository,
-                        ghContent));
-            }
-            ));
-        } catch (IOException ioExc) {
-            ioExc.printStackTrace();
-            return null;
-        }
-        return listaTareas;
+        return tareas;
     }
 
     private Tarea scanRecursiveDirectory(final String baseDir, final GHRepository repository, final GHContent item) {
@@ -67,7 +59,7 @@ public class GitHubService {
             if (item.getName().endsWith("java")) {
                 //me creo y me retorno para que me capture el padre invocador
                 try {
-                    Tarea tarea = new JavaParserService().generateTestClassForJavaFile(item.read());
+                    Tarea tarea = this.classGenerator.generateTestClassForJavaFile(item.read());
                     if (tarea != null) {
                         tarea.setOriginPathToTest(baseDir); //baseDir parent
                         return tarea;
@@ -107,24 +99,5 @@ public class GitHubService {
         }
     }
 
-    private void scanDir(final GHContent item, final List<GHContent> lista) {
-        if (item.isDirectory()) {
-            scanDir(null, lista);
-        } else if (item.isFile() && item.getName().endsWith("java")) {
-            lista.add(item);
-        }
-    }
-
-    // Implementa métodos para acceder a repositorios y archivos en GitHub.
-
-    public List<Tarea> getListOfTasks() {
-        initGitHubService();
-        return this.tareas;
-    }
-
-    public byte[] getZipOfTests() {
-        initGitHubService();
-        return this.bytesOfZipped;
-    }
 
 }

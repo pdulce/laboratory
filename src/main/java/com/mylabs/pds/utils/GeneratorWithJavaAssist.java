@@ -2,41 +2,55 @@ package com.mylabs.pds.utils;
 
 
 import com.mylabs.pds.model.Tarea;
-import javassist.*;
+import javassist.CannotCompileException;
+import javassist.ClassPool;
+import javassist.CtClass;
+import javassist.CtMethod;
+import javassist.Modifier;
 import javassist.bytecode.AnnotationsAttribute;
 import javassist.bytecode.ClassFile;
 import javassist.bytecode.ConstPool;
 import javassist.bytecode.annotation.Annotation;
 
 
-import java.io.*;
+import java.io.ByteArrayInputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.StringReader;
+import java.io.StringWriter;
 import java.util.ArrayList;
 import java.util.List;
 
-public class GeneratorWithJavaAssist {
+public class GeneratorWithJavaAssist implements IClassGenerator {
 
-    public static InputStream stringReaderToInputStream(StringReader stringReader) {
-        StringWriter stringWriter = new StringWriter();
-        char[] buffer = new char[1024];
-        int bytesRead;
-        try {
-            while ((bytesRead = stringReader.read(buffer)) != -1) {
-                stringWriter.write(buffer, 0, bytesRead);
-            }
-            return new ByteArrayInputStream(stringWriter.toString().getBytes());
-        } catch (IOException e) {
-            // Maneja la excepción según tus necesidades
-            e.printStackTrace();
-            return null;
-        }
-    }
-    public Tarea generateTestClassForJavaFile(String sourceCode) {
-        InputStream inputStream = stringReaderToInputStream(new java.io.StringReader(sourceCode));
+    public Tarea generateTestClassForJavaFile(InputStream inputStream) {
         try {
             return generateTestClassFrom(ClassPool.getDefault().makeClass(inputStream));
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
+    }
+
+    public Tarea generateTestClassForJavaFile(String sourceCode) {
+        StringWriter stringWriter = new StringWriter();
+        StringReader reader = new StringReader(sourceCode);
+        char[] buffer = new char[1024];
+        int bytesRead;
+        while (true) {
+            try {
+                if ((bytesRead = reader.read(buffer)) == -1) break;
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
+            stringWriter.write(buffer, 0, bytesRead);
+        }
+        try {
+            stringWriter.close();
+            stringWriter.flush();
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+        return generateTestClassForJavaFile(new ByteArrayInputStream(stringWriter.toString().getBytes()));
     }
 
     public static void addClassAnnotation(CtClass ctClass, String annotationClass) {

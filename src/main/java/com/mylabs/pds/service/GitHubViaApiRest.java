@@ -31,11 +31,15 @@ public class GitHubViaApiRest {
     @Autowired
     private ConfiguracionRepository configRepository;
 
+    private IClassGenerator classGenerator;
+
     public GitHubViaApiRest(RestTemplateBuilder restTemplateBuilder) {
         this.restTemplate = restTemplateBuilder.build();
     }
 
-    public List<Tarea> scanRepository(String owner, String repository) {
+    public List<Tarea> scanRepository(final String owner, final String repository,
+                                      final IClassGenerator classGenerator) {
+        this.classGenerator = classGenerator;
         String token = this.configRepository.findById(1L).isPresent()
                 ? this.configRepository.findById(1L).get().getCodigo() : "unknown";
 
@@ -71,9 +75,8 @@ public class GitHubViaApiRest {
                     HttpMethod.GET, entity, String.class);
             String javaFileContent = fileResponse.getBody();
             //System.out.println("Contenido del archivo " + content.getName() + ":\n" + javaFileContent);
-            Tarea tarea = new GeneratorWithJavaAssist().generateTestClassForJavaFile(javaFileContent);
-            throw new RuntimeException(",,,,");
-            //return new JavaParserService().generateTestClassForJavaFile(javaFileContent);
+            return this.classGenerator.generateTestClassForJavaFile(javaFileContent);
+
         } else {
             // me creo y creo una lista de hijos que lleno con llamadas recursivas de cada uno
             Tarea tareaFolder = new Tarea();
