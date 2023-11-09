@@ -31,9 +31,9 @@ public class GeneratorWithJavaAssist implements IClassGenerator {
         }
     }
 
-    public Tarea generateTestClassForJavaFile(String sourceCode) {
+    public Tarea generateTestClassForJavaFile(String byteClassCode) {
         StringWriter stringWriter = new StringWriter();
-        StringReader reader = new StringReader(sourceCode);
+        StringReader reader = new StringReader(byteClassCode);
         char[] buffer = new char[1024];
         int bytesRead;
         while (true) {
