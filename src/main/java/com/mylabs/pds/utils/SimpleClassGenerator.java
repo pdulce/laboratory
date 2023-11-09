@@ -69,7 +69,7 @@ public class SimpleClassGenerator implements IClassGenerator {
         }
 
         testClass.append("}\n");
-        if (childrenTasks.isEmpty()) {
+        if (childrenTasks.isEmpty() || className == null || className.contentEquals("")) {
             return null;
         }
         // Crear la instancia de Tarea con el resultado
