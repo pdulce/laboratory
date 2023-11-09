@@ -5,6 +5,7 @@ import com.mylabs.pds.repository.ConfiguracionRepository;
 import com.mylabs.pds.repository.TareaRepository;
 import com.mylabs.pds.utils.IClassGenerator;
 import com.mylabs.pds.utils.ZipUtil;
+import org.kohsuke.github.GHBranch;
 import org.kohsuke.github.GHContent;
 import org.kohsuke.github.GHRepository;
 import org.kohsuke.github.GitHub;
@@ -39,7 +40,13 @@ public class GitHubLibraryAccessService {
                 System.out.println("Error al acceder al repositorio");
                 return null;
             }
-            List<GHContent> ghDirContent = repository.getDirectoryContent(INIT_BASE_DIR);
+            GHBranch developBranch = repository.getBranch("develop");
+            if (developBranch == null) {
+                System.out.println("Error al acceder a la rama 'develop'");
+                return null;
+            }
+            // Recupera la información de los directorios de la rama 'develop'
+            List<GHContent> ghDirContent = repository.getDirectoryContent(INIT_BASE_DIR, developBranch.getSHA1());
             for (GHContent ghContent : ghDirContent) {
                 tareas.add(scanRecursiveDirectory(INIT_BASE_DIR.concat("/").concat(ghContent.getName()),
                         repository, ghContent));

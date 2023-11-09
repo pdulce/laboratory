@@ -33,7 +33,6 @@ public class GeneratorTestsController {
 
     @GetMapping("/scanGitRepoWithHubParserAndAPIAccessGit")
     public List<Tarea> scanGitRepoWithHubParserAndAPIAccessGit() {
-
         return gitHubViaApiRest.scanRepository("pdulce", "laboratory", new GeneratorWithGitHubParser());
     }
 
