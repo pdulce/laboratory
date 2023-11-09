@@ -52,7 +52,7 @@ public class JavaParserService {
     private Tarea generateTestClass(CompilationUnit cu) {
         // Implementa la lógica para generar una clase de prueba con métodos de prueba.
         // Configura la clase de prueba para Spring Boot Test y uso de H2.
-        return new TestClassGenerator().generateTestClass(cu);
+        return new ClassGeneratorWithGitHubParser().generateTestClass(cu);
     }
 
 }

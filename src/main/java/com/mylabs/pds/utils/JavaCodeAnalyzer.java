@@ -31,15 +31,13 @@ public class JavaCodeAnalyzer {
         boolean success = task.call();
 
         if (!success) {
-            System.out.println("Error en el análisis");
+            System.out.println("***Análisis de la clase con warnings ****");
             for (javax.tools.Diagnostic<?> diagnostic : diagnostics.getDiagnostics()) {
                 System.out.println(diagnostic);
             }
-            return null;
-        } else {
-            return classProcessor.getTarea();
-        }
 
+        }
+        return classProcessor.getTarea();
     }
 
     // Clase personalizada para representar un archivo fuente desde una cadena de código

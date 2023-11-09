@@ -96,6 +96,7 @@ public class GitHubViaApiRest {
                 Tarea tareaChild = scanDir(contentItem, baseUriPattern, owner, repository,
                         initDirBase  + "/" + content.getName(), branch, entity);
                 if (tareaChild != null) {
+                    tareaChild.setParentTaskId(tareaFolder);
                     tareaFolder.getChildrenTasks().add(tareaChild);
                 }
             }

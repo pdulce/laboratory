@@ -102,6 +102,7 @@ public class PackageUsageProcessor extends AbstractProcessor {
                         newTask.setTestName("test_" + methodName);
                         newTask.setOriginPathToTest(methodName);
                         newTask.setContents(methodDeclaration.toString());
+                        newTask.setParentTaskId(tareaOfClass);
                         tareaOfClass.getChildrenTasks().add(newTask);
                     }
                 }

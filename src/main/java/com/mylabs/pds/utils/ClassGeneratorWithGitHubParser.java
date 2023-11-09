@@ -10,16 +10,19 @@ import com.mylabs.pds.model.Tarea;
 import java.util.ArrayList;
 import java.util.List;
 
-public class TestClassGenerator {
+public class ClassGeneratorWithGitHubParser {
 
     public Tarea generateTestClass(final CompilationUnit cu) {
-        Tarea tarea = null;
+
         if (cu != null) {
             try {
-                List<Tarea> childrenTasks = new ArrayList<>();
                 // Obtén el nombre de la clase de la CompilationUnit
                 String className = cu.findFirst(ClassOrInterfaceDeclaration.class).
                         map(TypeDeclaration::getNameAsString).orElse("UnknownClass");
+                Tarea tarea = new Tarea();
+                tarea.setType("CLASS");
+                tarea.setTestName(className.concat("Test.java"));
+                List<Tarea> childrenTasks = new ArrayList<>();
 
                 // Crea una nueva CompilationUnit para la clase de prueba
                 CompilationUnit testClass = new CompilationUnit();
@@ -42,23 +45,22 @@ public class TestClassGenerator {
                         newTask.setTestName("test_" + method.getNameAsString());
                         newTask.setOriginPathToTest(method.getNameAsString());
                         newTask.setContents(methodDeclaration.toString());
+                        newTask.setParentTaskId(tarea);
                         childrenTasks.add(newTask);
                     }
                 }));
 
                 // Puedes imprimir el contenido de la clase de prueba o escribirlo en un archivo
                 System.out.println(testClass.toString());
-                tarea = new Tarea();
-                tarea.setType("CLASS");
-                tarea.setTestName(className.concat("Test.java"));
                 tarea.setContents(testClass.toString());
                 tarea.setChildrenTasks(childrenTasks);
+                return tarea;
             } catch (Throwable exc) {
                 exc.printStackTrace();
                 return null;
             }
         }
-        return tarea;
+        return null;
     }
 
     private MethodDeclaration generateTestMethod(String methodName) {
