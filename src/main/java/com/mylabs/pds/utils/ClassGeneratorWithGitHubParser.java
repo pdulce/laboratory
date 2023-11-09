@@ -1,10 +1,12 @@
 package com.mylabs.pds.utils;
 
+import aj.org.objectweb.asm.Type;
 import com.github.javaparser.ast.CompilationUnit;
 import com.github.javaparser.ast.Modifier;
 import com.github.javaparser.ast.body.ClassOrInterfaceDeclaration;
 import com.github.javaparser.ast.body.MethodDeclaration;
 import com.github.javaparser.ast.body.TypeDeclaration;
+import com.github.javaparser.ast.stmt.BlockStmt;
 import com.mylabs.pds.model.Tarea;
 
 import java.util.ArrayList;
@@ -38,7 +40,8 @@ public class ClassGeneratorWithGitHubParser {
                 cu.findAll(MethodDeclaration.class).forEach((method -> {
                     if (!method.isAbstract() && //method.isFinal() &&
                             method.getModifiers().contains(Modifier.publicModifier())) {
-                        MethodDeclaration methodDeclaration = generateTestMethod(method.getNameAsString());
+                        MethodDeclaration methodDeclaration = generateTestMethod(method.getNameAsString(),
+                                method.isStatic());
                         testClassDeclaration.addMember(methodDeclaration);
                         Tarea newTask = new Tarea();
                         newTask.setType("METHOD");
@@ -63,11 +66,17 @@ public class ClassGeneratorWithGitHubParser {
         return null;
     }
 
-    private MethodDeclaration generateTestMethod(String methodName) {
+    private MethodDeclaration generateTestMethod(final String methodName, final boolean isStatic) {
+        // Genera un método de prueba con anotación @Test
         MethodDeclaration testMethod = new MethodDeclaration();
         testMethod.addAnnotation("Test");
         testMethod.setModifiers(Modifier.publicModifier().getKeyword());
-        testMethod.setName("test" + methodName); // Agrega "test" al nombre del método
+        testMethod.setType(Type.VOID_TYPE.getClassName());
+        testMethod.setFinal(true);
+
+        // Agrega el nombre del método y su contenido
+        testMethod.setName("test_" + methodName);
+        testMethod.setBody(new BlockStmt());
 
         return testMethod;
     }

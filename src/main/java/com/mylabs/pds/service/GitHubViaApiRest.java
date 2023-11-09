@@ -71,12 +71,8 @@ public class GitHubViaApiRest {
                     HttpMethod.GET, entity, String.class);
             String javaFileContent = fileResponse.getBody();
             //System.out.println("Contenido del archivo " + content.getName() + ":\n" + javaFileContent);
-            new GeneratorWithJavaAssist().generarSampleCode();
-            Tarea tarea = new JavaParserService().generateTestClassForJavaFile(javaFileContent);
-            Tarea tarea2 =
-                    new JavaCodeAnalyzer().analyzeJavaCode(content.getName().substring(0,
-                            content.getName().indexOf(".")), javaFileContent);
-            return tarea;
+            //new GeneratorWithJavaAssist().generarSampleCode();
+            return new JavaParserService().generateTestClassForJavaFile(javaFileContent);
         } else {
             // me creo y creo una lista de hijos que lleno con llamadas recursivas de cada uno
             Tarea tareaFolder = new Tarea();
