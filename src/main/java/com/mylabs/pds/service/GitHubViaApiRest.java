@@ -22,6 +22,7 @@ import java.util.List;
 public class GitHubViaApiRest {
 
     private static final String GITHUB_API_URL = "https://api.github.com";
+    private static final String INIT_BASE_DIR = "/src/main/java";
     private RestTemplate restTemplate;
 
     @Autowired
@@ -38,8 +39,8 @@ public class GitHubViaApiRest {
         String token = this.configRepository.findById(1L).isPresent()
                 ? this.configRepository.findById(1L).get().getCodigo() : "unknown";
 
-        String baseUriPattern = "https://api.github.com/repos/%s/%s/contents%s?ref=%s";
-        String initDirBase = "/src/main/java";
+        String baseUriPattern = GITHUB_API_URL + "/repos/%s/%s/contents%s?ref=%s";
+        String initDirBase = INIT_BASE_DIR;
         String branch = "develop";
         HttpHeaders headers = new HttpHeaders();
         headers.setAccept(Collections.singletonList(MediaType.APPLICATION_JSON));
@@ -53,7 +54,7 @@ public class GitHubViaApiRest {
         List<Tarea> tareas = new ArrayList<>();
         for (GitHubContent contentItem : contentsInner) {
             // llamada recursiva para descubrir los fuentes java
-            tareas.add(scanDir(null, baseUriPattern, owner, repository, initDirBase, branch, entity));
+            tareas.add(scanDir(contentItem, baseUriPattern, owner, repository, initDirBase, branch, entity));
         }
         byte[] bytesOfZipped = new ZipUtil().generarZipDesdeTareas(tareas);
         tareas = this.tareaRepository.saveAll(tareas);
