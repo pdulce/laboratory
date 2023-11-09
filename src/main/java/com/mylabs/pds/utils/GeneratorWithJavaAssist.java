@@ -74,13 +74,11 @@ public class GeneratorWithJavaAssist implements IClassGenerator {
     }
 
     public Tarea generateTestClassFrom(final CtClass targetClass) {
-        Tarea tarea = new Tarea();
-        tarea.setType("CLASS");
+
         List<Tarea> childrenTasks = new ArrayList<>();
         try {
             // Obtén el nombre de la clase
             String className = targetClass.getSimpleName();
-            tarea.setTestName(className.concat("Test.java"));
 
             // Crea una nueva clase de prueba
             ClassPool pool = ClassPool.getDefault();
@@ -106,15 +104,22 @@ public class GeneratorWithJavaAssist implements IClassGenerator {
                     childrenTasks.add(newTask);
                 }
             }
+            if (childrenTasks.isEmpty()) {
+                return null;
+            }
+            Tarea tarea = new Tarea();
+            tarea.setType("CLASS");
+            tarea.setTestName(className.concat("Test.java"));
+            tarea.setOriginPathToTest(targetClass.getPackageName().concat(".").concat(targetClass.getSimpleName()));
             tarea.setChildrenTasks(childrenTasks);
             tarea.setContents(testClass.toString());
             // Puedes imprimir el contenido de la clase de prueba o escribirlo en un archivo
             System.out.println(testClass.toClass().toString());
-
+            return tarea;
         } catch (Exception e) {
             e.printStackTrace();
         }
-        return tarea;
+        return null;
     }
 
 

@@ -71,13 +71,12 @@ public class GeneratorWithGitHubParser implements IClassGenerator {
                 // Obtén el nombre de la clase de la CompilationUnit
                 String className = cu.findFirst(ClassOrInterfaceDeclaration.class).
                         map(TypeDeclaration::getNameAsString).orElse("UnknownClass");
-                Tarea tarea = new Tarea();
-                tarea.setType("CLASS");
-                tarea.setTestName(className.concat("Test.java"));
+
                 List<Tarea> childrenTasks = new ArrayList<>();
 
                 // Crea una nueva CompilationUnit para la clase de prueba
                 CompilationUnit testClass = new CompilationUnit();
+                testClass.setPackageDeclaration(cu.getPackageDeclaration().get().getNameAsString());
                 testClass.addImport("org.junit.jupiter.api.Test");
                 testClass.addImport("org.springframework.boot.test.context.SpringBootTest");
                 testClass.addImport("org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest");
@@ -101,9 +100,16 @@ public class GeneratorWithGitHubParser implements IClassGenerator {
                         childrenTasks.add(newTask);
                     }
                 }));
-
+                if (childrenTasks.isEmpty()) {
+                    return null;
+                }
                 // Puedes imprimir el contenido de la clase de prueba o escribirlo en un archivo
                 System.out.println(testClass.toString());
+                Tarea tarea = new Tarea();
+                tarea.setType("CLASS");
+                tarea.setTestName(className.concat("Test.java"));
+                tarea.setOriginPathToTest(testClass.getPackageDeclaration().get().getNameAsString().
+                        concat(".").concat(className).concat(".java"));
                 tarea.setContents(testClass.toString());
                 tarea.setChildrenTasks(childrenTasks);
                 return tarea;

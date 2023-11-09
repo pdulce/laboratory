@@ -32,9 +32,6 @@ public class SimpleClassGenerator implements IClassGenerator {
             className = classMatcher.group(1);
         }
 
-        Tarea tarea = new Tarea();
-        tarea.setType("CLASS");
-        tarea.setTestName(className.concat("Test.java"));
         List<Tarea> childrenTasks = new ArrayList<>();
 
         // Crear la clase de Test basada en SpringBoot JPA Data y H2
@@ -72,9 +69,15 @@ public class SimpleClassGenerator implements IClassGenerator {
         }
 
         testClass.append("}\n");
-
+        if (childrenTasks.isEmpty()) {
+            return null;
+        }
         // Crear la instancia de Tarea con el resultado
         System.out.println(testClass.toString());
+        Tarea tarea = new Tarea();
+        tarea.setType("CLASS");
+        tarea.setTestName(className.concat("Test.java"));
+        tarea.setOriginPathToTest(packageName.concat(".").concat(className).concat(".java"));
         tarea.setContents(testClass.toString());
         tarea.setChildrenTasks(childrenTasks);
 
