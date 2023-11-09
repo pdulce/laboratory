@@ -1,5 +1,13 @@
 package com.mylabs.pds.utils;
 
+/** SOlo esta dependencia en tu proyecto de Itinerario
+ *      <dependency>
+ * 			<groupId>com.github.javaparser</groupId>
+ * 			<artifactId>javaparser-core</artifactId>
+ * 			<version>3.25.6</version>
+ * 		</dependency>
+ */
+
 import aj.org.objectweb.asm.Type;
 import com.github.javaparser.StaticJavaParser;
 import com.github.javaparser.ast.CompilationUnit;
