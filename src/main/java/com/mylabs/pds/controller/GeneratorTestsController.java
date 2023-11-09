@@ -1,8 +1,8 @@
 package com.mylabs.pds.controller;
 
 import com.mylabs.pds.model.Tarea;
-import com.mylabs.pds.service.GitHubService;
-import com.mylabs.pds.service.GitHubViaApiRest;
+import com.mylabs.pds.service.GitHubLibraryAccessService;
+import com.mylabs.pds.service.GitHubApiRestAccessService;
 import com.mylabs.pds.utils.GeneratorWithGitHubParser;
 import com.mylabs.pds.utils.GeneratorWithJavaAssist;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -17,29 +17,28 @@ import java.util.List;
 public class GeneratorTestsController {
 
     @Autowired
-    private GitHubViaApiRest gitHubViaApiRest;
+    private GitHubApiRestAccessService gitHubViaApiRest;
     @Autowired
-    private GitHubService gitHubService;
+    private GitHubLibraryAccessService gitHubService;
 
-    @GetMapping("/scanGitRepoWithHubParserAccessViaLibraryHub")
-    public List<Tarea> scanGitRepoWithHubParserAccessViaLibraryHub() {
-
+    @GetMapping("/scanGitRepoWithHubParserAndAccessViaLibraryHub")
+    public List<Tarea> scanGitRepoWithHubParserAndAccessViaLibraryHub() {
         return gitHubService.scanRepository("pdulce", "laboratory", new GeneratorWithGitHubParser());
     }
 
-    @GetMapping("/scanGitRepoWithJavaAssistParserAccessViaLibraryHub")
-    public List<Tarea> scanGitRepoWithJavaAssistParserAccessViaLibraryHub() {
+    @GetMapping("/scanGitRepoWithJavaAssistAndAccessViaLibraryHub")
+    public List<Tarea> scanGitRepoWithJavaAssistAndAccessViaLibraryHub() {
         return gitHubService.scanRepository("pdulce", "laboratory", new GeneratorWithJavaAssist());
     }
 
-    @GetMapping("/scanGitRepoWithHubParserWithAPIAccessGit")
-    public List<Tarea> scanGitRepoWithHubParserWithAPIAccessGit() {
+    @GetMapping("/scanGitRepoWithHubParserAndAPIAccessGit")
+    public List<Tarea> scanGitRepoWithHubParserAndAPIAccessGit() {
 
         return gitHubViaApiRest.scanRepository("pdulce", "laboratory", new GeneratorWithGitHubParser());
     }
 
-    @GetMapping("/scanGitRepoWithJavaAssistParserWithAPIAccessGit")
-    public List<Tarea> scanGitRepoWithJavaAssistParserWithAPIAccessGit() {
+    @GetMapping("/scanGitRepoWithJavaAssistAndAPIAccessGit")
+    public List<Tarea> scanGitRepoWithJavaAssistAndAPIAccessGit() {
         return gitHubViaApiRest.scanRepository("pdulce", "laboratory", new GeneratorWithJavaAssist());
     }
 

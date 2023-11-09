@@ -19,7 +19,7 @@ import java.util.Collections;
 import java.util.List;
 
 @Service
-public class GitHubViaApiRest {
+public class GitHubApiRestAccessService {
 
     private static final String GITHUB_API_URL = "https://api.github.com";
     private static final String INIT_BASE_DIR = "/src/main/java";
@@ -33,7 +33,7 @@ public class GitHubViaApiRest {
 
     private IClassGenerator classGenerator;
 
-    public GitHubViaApiRest(RestTemplateBuilder restTemplateBuilder) {
+    public GitHubApiRestAccessService(RestTemplateBuilder restTemplateBuilder) {
         this.restTemplate = restTemplateBuilder.build();
     }
 

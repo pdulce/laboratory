@@ -16,7 +16,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 @Service
-public class GitHubService {
+public class GitHubLibraryAccessService {
 
     private static final String INIT_BASE_DIR = "/src/main/java";
     @Autowired
