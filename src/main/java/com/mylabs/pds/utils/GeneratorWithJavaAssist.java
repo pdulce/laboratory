@@ -9,14 +9,34 @@ import javassist.bytecode.ConstPool;
 import javassist.bytecode.annotation.Annotation;
 
 
-import java.io.StringReader;
+import java.io.*;
 import java.util.ArrayList;
 import java.util.List;
 
 public class GeneratorWithJavaAssist {
 
-    public Tarea generateTestClassForJavaFile(String code) {
-        return generateTestClassFrom(ClassPool.getDefault().makeClass(code));
+    public static InputStream stringReaderToInputStream(StringReader stringReader) {
+        StringWriter stringWriter = new StringWriter();
+        char[] buffer = new char[1024];
+        int bytesRead;
+        try {
+            while ((bytesRead = stringReader.read(buffer)) != -1) {
+                stringWriter.write(buffer, 0, bytesRead);
+            }
+            return new ByteArrayInputStream(stringWriter.toString().getBytes());
+        } catch (IOException e) {
+            // Maneja la excepción según tus necesidades
+            e.printStackTrace();
+            return null;
+        }
+    }
+    public Tarea generateTestClassForJavaFile(String sourceCode) {
+        InputStream inputStream = stringReaderToInputStream(new java.io.StringReader(sourceCode));
+        try {
+            return generateTestClassFrom(ClassPool.getDefault().makeClass(inputStream));
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     public static void addClassAnnotation(CtClass ctClass, String annotationClass) {
