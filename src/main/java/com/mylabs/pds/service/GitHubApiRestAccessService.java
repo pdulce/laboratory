@@ -24,7 +24,6 @@ import java.util.List;
 public class GitHubApiRestAccessService {
 
     private static final String GITHUB_API_URL = "https://api.github.com";
-
     private static final String GITLAB_API_URL = "https://giss.gitlab.repo...elque sea";
     private static final String INIT_BASE_DIR = "/src/main/java";
 
@@ -65,9 +64,6 @@ public class GitHubApiRestAccessService {
                                       final IClassGenerator classGenerator) {
 
         this.classGenerator = classGenerator;
-        String token = this.configRepository.findById(1L).isPresent()
-                ? this.configRepository.findById(1L).get().getCodigo() : "unknown";
-
         HttpHeaders headers = new HttpHeaders();
         headers.setAccept(Collections.singletonList(MediaType.APPLICATION_JSON));
 
