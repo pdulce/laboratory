@@ -48,7 +48,6 @@ public class ClassGeneratorWithGitHubParser {
                         newTask.setTestName("test_" + method.getNameAsString());
                         newTask.setOriginPathToTest(method.getNameAsString());
                         newTask.setContents(methodDeclaration.toString());
-                        newTask.setParentTaskId(tarea);
                         childrenTasks.add(newTask);
                     }
                 }));
@@ -72,6 +71,7 @@ public class ClassGeneratorWithGitHubParser {
         testMethod.addAnnotation("Test");
         testMethod.setModifiers(Modifier.publicModifier().getKeyword());
         testMethod.setType(Type.VOID_TYPE.getClassName());
+        testMethod.setStatic(isStatic);
         testMethod.setFinal(true);
 
         // Agrega el nombre del método y su contenido
