@@ -16,8 +16,7 @@ import java.util.List;
 public class GeneratorWithJavaAssist {
 
     public Tarea generateTestClassForJavaFile(String code) {
-        CtClass ctClass = ClassPool.getDefault().makeClass(new StringReader(code).toString());
-        return generateTestClass(ctClass);
+        return generateTestClassFrom(ClassPool.getDefault().makeClass(code));
     }
 
     public static void addClassAnnotation(CtClass ctClass, String annotationClass) {
@@ -38,7 +37,7 @@ public class GeneratorWithJavaAssist {
         method.getMethodInfo().addAttribute(annotationsAttribute);
     }
 
-    public Tarea generateTestClass(final CtClass targetClass) {
+    public Tarea generateTestClassFrom(final CtClass targetClass) {
         Tarea tarea = new Tarea();
         tarea.setType("CLASS");
         List<Tarea> childrenTasks = new ArrayList<>();
