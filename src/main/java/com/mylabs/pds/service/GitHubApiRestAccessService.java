@@ -108,6 +108,9 @@ public class GitHubApiRestAccessService {
         } else {
             // me creo y creo una lista de hijos que lleno con llamadas recursivas de cada uno
             tarea = new Tarea();
+            if (idParent == 1L){
+                tarea.setId(1L);
+            }
             tarea.setOriginPathToTest(initDirBase + "/" + content.getName()); //baseDir parent
             tarea.setType("FOLDER");
             tarea.setTestName(content.getName());

@@ -38,6 +38,9 @@ public class Tarea {
     @Column(columnDefinition = "varchar(2000)")
     private String contents;
 
+    @Column
+    private Long parentId;
+
     @ManyToOne
     @JoinColumn(name = "parent_task_id")
     @JsonIgnore
@@ -47,8 +50,7 @@ public class Tarea {
     @OneToMany(mappedBy = "parentTaskId", cascade = CascadeType.ALL)
     //@Transient
     private List<Tarea> childrenTasks;
-    @Transient
-    private Long parentId;
+
 
     public Long getId() {
         return id;
