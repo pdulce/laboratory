@@ -1,5 +1,6 @@
 package com.mylabs.pds.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -39,12 +40,15 @@ public class Tarea {
 
     @ManyToOne
     @JoinColumn(name = "parent_task_id")
+    @JsonIgnore
     //@Column(name = "parent_task_id")
     private Tarea parentTaskId;
 
     @OneToMany(mappedBy = "parentTaskId", cascade = CascadeType.ALL)
     //@Transient
     private List<Tarea> childrenTasks;
+    @Transient
+    private Long parentId;
 
     public Long getId() {
         return id;
@@ -86,6 +90,13 @@ public class Tarea {
         this.parentTaskId = parentTaskId;
     }
 
+    public void setParentId(Long idParent) {
+        this.parentId = idParent;
+    }
+
+    public Long getParentId() {
+        return this.parentId;
+    }
 
     public List<Tarea> getChildrenTasks() {
         return childrenTasks;

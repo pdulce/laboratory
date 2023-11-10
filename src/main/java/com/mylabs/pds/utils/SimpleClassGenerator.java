@@ -54,8 +54,8 @@ public class SimpleClassGenerator implements IClassGenerator {
             StringBuilder methodBuilder = new StringBuilder();
             // Agregar método de prueba
             methodBuilder.append("    @Test\n");
-            methodBuilder.append("    public void test").append(methodName).append("() {\n");
-            methodBuilder.append("        // Implementa tu lógica de prueba aquí\n");
+            methodBuilder.append("    public void test_").append(methodName).append("() {\n");
+            methodBuilder.append("        //TO-DO: Implementa tu test \n");
             methodBuilder.append("    }\n\n");
 
             testClass.append(methodBuilder);

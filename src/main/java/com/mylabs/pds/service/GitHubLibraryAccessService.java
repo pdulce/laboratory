@@ -26,16 +26,20 @@ public class GitHubLibraryAccessService {
     private ConfiguracionRepository configRepository;
 
     private IClassGenerator classGenerator;
+    private String owner;
+    private String repositoryName;
 
     public List<Tarea> scanRepository(final String owner, final String repositoryName,
                                       final IClassGenerator classGenerator) {
         this.classGenerator = classGenerator;
+        this.repositoryName = repositoryName;
+        this.owner = owner;
         String token = this.configRepository.findById(1L).isPresent()
                 ? this.configRepository.findById(1L).get().getCodigo() : "unknown";
         List<Tarea> tareas = new ArrayList<>();
         try {
             GitHub github = GitHub.connectUsingOAuth(token);
-            GHRepository repository = github.getUser(owner).getRepository(repositoryName);
+            GHRepository repository = github.getUser(this.owner).getRepository(this.repositoryName);
             if (repository == null) {
                 System.out.println("Error al acceder al repositorio");
                 return null;

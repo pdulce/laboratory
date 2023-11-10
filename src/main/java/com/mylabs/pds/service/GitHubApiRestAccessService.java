@@ -37,38 +37,40 @@ public class GitHubApiRestAccessService {
     private ConfiguracionRepository configRepository;
 
     private IClassGenerator classGenerator;
+    private String owner;
+    private String repositoryName;
 
     public GitHubApiRestAccessService(RestTemplateBuilder restTemplateBuilder) {
         this.restTemplate = restTemplateBuilder.build();
     }
 
-    private String accessGitLab(final String owner, final String repository, final HttpHeaders headers) {
-
+    private String accessGitLab(final HttpHeaders headers) {
         String token = this.configRepository.findById(2L).isPresent()
                 ? this.configRepository.findById(2L).get().getCodigo() : "unknown";
         String baseUriPattern = GITLAB_API_URL + "/projects/%s/%s/repository/tree?ref=%s";
         headers.set("PRIVATE-TOKEN", token); // Use "PRIVATE-TOKEN" header for GitLab
-        return String.format(baseUriPattern, owner, repository, INIT_BASE_DIR, BRANCH_NAME);
+        return String.format(baseUriPattern, this.owner, this.repositoryName, INIT_BASE_DIR, BRANCH_NAME);
     }
 
-    private String accessGitHub(final String owner, final String repository, final HttpHeaders headers) {
-
+    private String accessGitHub(final HttpHeaders headers) {
         String token = this.configRepository.findById(1L).isPresent()
                 ? this.configRepository.findById(1L).get().getCodigo() : "unknown";
         String baseUriPattern = GITHUB_API_URL + "/repos/%s/%s/contents%s?ref=%s";
         headers.set("Authorization", "token " + token);
-        return String.format(baseUriPattern, owner, repository, INIT_BASE_DIR , BRANCH_NAME);
+        return String.format(baseUriPattern, this.owner, this.repositoryName, INIT_BASE_DIR , BRANCH_NAME);
     }
 
-    public List<Tarea> scanRepository(final String owner, final String repository,
+    public List<Tarea> scanRepository(final String owner, final String repositoryName,
                                       final IClassGenerator classGenerator) {
 
         this.classGenerator = classGenerator;
+        this.repositoryName = repositoryName;
+        this.owner = owner;
         HttpHeaders headers = new HttpHeaders();
         headers.setAccept(Collections.singletonList(MediaType.APPLICATION_JSON));
 
-        String newGitApiUrl = accessGitHub(owner, repository, headers);
-        //String newGitApiUrl = accessGitLab(owner, repository, headers);
+        String newGitApiUrl = accessGitHub(headers);
+        //String newGitApiUrl = accessGitLab(headers);
 
         String baseUriPattern = GITHUB_API_URL + "/repos/%s/%s/contents%s?ref=%s";
         //String baseUriPattern = GITLAB_API_URL + "/repos/%s/%s/contents%s?ref=%s";
@@ -79,18 +81,19 @@ public class GitHubApiRestAccessService {
                 GitHubContent[].class);
         GitHubContent[] contentsInner = responseInner.getBody();
         List<Tarea> tareas = new ArrayList<>();
+        Long idParent = 1L;
         for (GitHubContent contentItem : contentsInner) {
             // llamada recursiva para descubrir los fuentes java
-            tareas.add(scanDir(contentItem, baseUriPattern, owner, repository, INIT_BASE_DIR, BRANCH_NAME, entity));
+            tareas.add(scanDir(idParent, contentItem, baseUriPattern, INIT_BASE_DIR, BRANCH_NAME, entity));
         }
         byte[] bytesOfZipped = new ZipUtil().generarZipDesdeTareas(tareas);
-        tareas = this.tareaRepository.saveAll(tareas);
+        //tareas = this.tareaRepository.saveAll(tareas);
         return tareas;
     }
 
-    private Tarea scanDir(final GitHubContent content, final String baseUriPattern,
-                         final String owner, final String repository,
-            final String initDirBase, final String branch, final HttpEntity<String> entity) {
+    private Tarea scanDir(final Long idParent, final GitHubContent content, final String baseUriPattern,
+                          final String initDirBase, final String branch, final HttpEntity<String> entity) {
+        Tarea tarea = null;
         if (content.getType().equals("file") && content.getName().endsWith(".java")) {
             // El archivo es un archivo Java, lee su contenido
             String fileContentUrl = content.getDownload_url();
@@ -98,32 +101,35 @@ public class GitHubApiRestAccessService {
                     HttpMethod.GET, entity, String.class);
             String javaFileContent = fileResponse.getBody();
             //System.out.println("Contenido del archivo " + content.getName() + ":\n" + javaFileContent);
-            return this.classGenerator.generateTestClassForJavaFile(javaFileContent);
-
+            tarea = this.classGenerator.generateTestClassForJavaFile(javaFileContent);
+            tarea.setParentId(idParent);
         } else {
             // me creo y creo una lista de hijos que lleno con llamadas recursivas de cada uno
-            Tarea tareaFolder = new Tarea();
-            tareaFolder.setOriginPathToTest(initDirBase + "/" + content.getName()); //baseDir parent
-            tareaFolder.setType("FOLDER");
-            tareaFolder.setTestName(content.getName());
-            tareaFolder.setChildrenTasks(new ArrayList<>());
-            tareaFolder = this.tareaRepository.save(tareaFolder);
+            tarea = new Tarea();
+            tarea.setOriginPathToTest(initDirBase + "/" + content.getName()); //baseDir parent
+            tarea.setType("FOLDER");
+            tarea.setTestName(content.getName());
+            tarea.setChildrenTasks(new ArrayList<>());
+            //tarea = this.tareaRepository.save(tarea);
             System.out.println("el archivo "+  content.getName() + " es un " + content.getType()
                     + "...lanzo una llamada recursiva");
-            String newGithubApiUrl = String.format(baseUriPattern, owner, repository,
+            String newGithubApiUrl = String.format(baseUriPattern, this.owner, this.repositoryName,
                     initDirBase + "/" + content.getName(), branch);
             ResponseEntity<GitHubContent[]> responseInner = restTemplate.exchange(newGithubApiUrl,
                     HttpMethod.GET, entity, GitHubContent[].class);
             GitHubContent[] contentsInner = responseInner.getBody();
+            Long idParentNew = idParent * 1000;
             for (GitHubContent contentItem : contentsInner) {
-                Tarea tareaChild = scanDir(contentItem, baseUriPattern, owner, repository,
+                Tarea tareaChild = scanDir(idParentNew, contentItem, baseUriPattern,
                         initDirBase  + "/" + content.getName(), branch, entity);
+                tareaChild.setId(idParentNew + 1);
                 if (tareaChild != null) {
-                    tareaFolder.getChildrenTasks().add(tareaChild);
+                    tareaChild.setParentId(idParent);
+                    tarea.getChildrenTasks().add(tareaChild);
                 }
             }
-            return tareaFolder;
         }
+        return tarea;
     }
 
 }
