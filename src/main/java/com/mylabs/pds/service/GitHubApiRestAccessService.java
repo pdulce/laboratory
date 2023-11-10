@@ -124,8 +124,8 @@ public class GitHubApiRestAccessService {
             for (GitHubContent contentItem : contentsInner) {
                 Tarea tareaChild = scanDir(idParentNew, contentItem, baseUriPattern,
                         initDirBase  + "/" + content.getName(), branch, entity);
-                tareaChild.setId(idParentNew + 1);
                 if (tareaChild != null) {
+                    tareaChild.setId(idParentNew + 1);
                     tareaChild.setParentId(idParent);
                     tarea.getChildrenTasks().add(tareaChild);
                 }
