@@ -102,7 +102,9 @@ public class GitHubApiRestAccessService {
             String javaFileContent = fileResponse.getBody();
             //System.out.println("Contenido del archivo " + content.getName() + ":\n" + javaFileContent);
             tarea = this.classGenerator.generateTestClassForJavaFile(javaFileContent);
-            tarea.setParentId(idParent);
+            if (tarea != null) {
+                tarea.setParentId(idParent);
+            }
         } else {
             // me creo y creo una lista de hijos que lleno con llamadas recursivas de cada uno
             tarea = new Tarea();
