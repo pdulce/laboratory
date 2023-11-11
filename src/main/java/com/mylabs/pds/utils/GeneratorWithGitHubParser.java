@@ -21,6 +21,7 @@ import com.mylabs.pds.model.Tarea;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicLong;
 
 public class GeneratorWithGitHubParser implements IClassGenerator {
 
@@ -31,7 +32,7 @@ public class GeneratorWithGitHubParser implements IClassGenerator {
         if (cu != null) {
             // Verificar si la clase tiene métodos públicos
             if (containsPublicMethods(cu)) {
-                tarea = generateTestClass(cu);
+                tarea = generateTestClass(id, cu);
                 tarea.setId(id);
             }
         }
@@ -45,8 +46,7 @@ public class GeneratorWithGitHubParser implements IClassGenerator {
         if (cu != null) {
             // Verificar si la clase tiene métodos públicos
             if (containsPublicMethods(cu)) {
-                tarea = generateTestClass(cu);
-                tarea.setId(id);
+                tarea = generateTestClass(id, cu);
             }
         }
         return tarea;
@@ -66,7 +66,7 @@ public class GeneratorWithGitHubParser implements IClassGenerator {
         return false; // No se encontraron métodos públicos
     }
 
-    public Tarea generateTestClass(final CompilationUnit cu) {
+    public Tarea generateTestClass(final Long id, final CompilationUnit cu) {
 
         if (cu != null) {
             try {
@@ -88,6 +88,7 @@ public class GeneratorWithGitHubParser implements IClassGenerator {
                 ClassOrInterfaceDeclaration testClassDeclaration = testClass.addClass(className + "Test");
                 testClassDeclaration.addAnnotation("SpringBootTest");
                 testClassDeclaration.addAnnotation("DataJpaTest");
+                AtomicLong idTask = new AtomicLong(id * 100);
                 cu.findAll(MethodDeclaration.class).forEach((method -> {
                     if (!method.isAbstract() && //method.isFinal() &&
                             method.getModifiers().contains(Modifier.publicModifier())) {
@@ -95,6 +96,8 @@ public class GeneratorWithGitHubParser implements IClassGenerator {
                                 method.isStatic());
                         testClassDeclaration.addMember(methodDeclaration);
                         Tarea newTask = new Tarea();
+                        newTask.setId(idTask.getAndIncrement());
+                        newTask.setParentId(id);
                         newTask.setType("METHOD");
                         newTask.setTestName("test_" + method.getNameAsString());
                         newTask.setOriginPathToTest(method.getNameAsString());
@@ -108,6 +111,7 @@ public class GeneratorWithGitHubParser implements IClassGenerator {
                 // Puedes imprimir el contenido de la clase de prueba o escribirlo en un archivo
                 System.out.println(testClass.toString());
                 Tarea tarea = new Tarea();
+                tarea.setId(id);
                 tarea.setType("CLASS");
                 tarea.setTestName(className.concat("Test.java"));
                 tarea.setOriginPathToTest(testClass.getPackageDeclaration().get().getNameAsString().
