@@ -6,7 +6,7 @@ import java.io.InputStream;
 
 public interface IClassGenerator {
 
-    public Tarea generateTestClassForJavaFile(String sourceCode);
+    public Tarea generateTestClassForJavaFile(Long id, String sourceCode);
 
-    public Tarea generateTestClassForJavaFile(InputStream inputStream);
+    public Tarea generateTestClassForJavaFile(Long id, InputStream inputStream);
 }

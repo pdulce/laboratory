@@ -24,16 +24,18 @@ import java.util.List;
 public class GeneratorWithJavaAssist implements IClassGenerator {
 
     @Override
-    public Tarea generateTestClassForJavaFile(InputStream inputStream) {
+    public Tarea generateTestClassForJavaFile(final Long id, final InputStream inputStream) {
         try {
-            return generateTestClassFrom(ClassPool.getDefault().makeClass(inputStream));
+            Tarea tarea = generateTestClassFrom(ClassPool.getDefault().makeClass(inputStream));
+            tarea.setId(id);
+            return tarea;
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
     }
 
     @Override
-    public Tarea generateTestClassForJavaFile(String byteClassCode) {
+    public Tarea generateTestClassForJavaFile(final Long id, final String byteClassCode) {
         StringWriter stringWriter = new StringWriter();
         StringReader reader = new StringReader(byteClassCode);
         char[] buffer = new char[1024];
@@ -52,7 +54,9 @@ public class GeneratorWithJavaAssist implements IClassGenerator {
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
-        return generateTestClassForJavaFile(new ByteArrayInputStream(stringWriter.toString().getBytes()));
+        Tarea tarea = generateTestClassForJavaFile(id, new ByteArrayInputStream(stringWriter.toString().getBytes()));
+        tarea.setId(id);
+        return tarea;
     }
 
     public static void addClassAnnotation(CtClass ctClass, String annotationClass) {

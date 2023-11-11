@@ -12,7 +12,7 @@ import java.util.regex.Pattern;
 public class SimpleClassGenerator implements IClassGenerator {
 
     @Override
-    public Tarea generateTestClassForJavaFile(String sourceCode) {
+    public Tarea generateTestClassForJavaFile(final Long id, final String sourceCode) {
         // Patrones para extraer información del código fuente
         Pattern packagePattern = Pattern.compile("package\\s+([\\w.]+);");
         Pattern classPattern = Pattern.compile("public\\s+class\\s+(\\w+)\\s*\\{");
@@ -46,7 +46,7 @@ public class SimpleClassGenerator implements IClassGenerator {
         // Obtener los métodos públicos
         Pattern methodPattern = Pattern.compile("public\\s+(\\w+)\\s+(\\w+)\\s*\\([^)]*\\)\\s*\\{");
         Matcher methodMatcher = methodPattern.matcher(sourceCode);
-
+        long idTask = id * 100;
         while (methodMatcher.find()) {
             String returnType = methodMatcher.group(1);
             String methodName = methodMatcher.group(2);
@@ -61,6 +61,8 @@ public class SimpleClassGenerator implements IClassGenerator {
             testClass.append(methodBuilder);
 
             Tarea newTask = new Tarea();
+            newTask.setId(idTask++);
+            newTask.setParentId(id);
             newTask.setType("METHOD");
             newTask.setTestName("test_" + methodName);
             newTask.setOriginPathToTest(methodName);
@@ -75,6 +77,7 @@ public class SimpleClassGenerator implements IClassGenerator {
         // Crear la instancia de Tarea con el resultado
         System.out.println(testClass.toString());
         Tarea tarea = new Tarea();
+        tarea.setId(id);
         tarea.setType("CLASS");
         tarea.setTestName(className.concat("Test.java"));
         tarea.setOriginPathToTest(packageName.concat(".").concat(className).concat(".java"));
@@ -85,7 +88,7 @@ public class SimpleClassGenerator implements IClassGenerator {
     }
 
 
-    public Tarea generateTestClassForJavaFile(InputStream inputStream) {
+    public Tarea generateTestClassForJavaFile(final Long id, final InputStream inputStream) {
         throw new NotImplementedException("not implemented yet");
     }
 

@@ -25,26 +25,28 @@ import java.util.List;
 public class GeneratorWithGitHubParser implements IClassGenerator {
 
     @Override
-    public Tarea generateTestClassForJavaFile(InputStream inputStream) {
+    public Tarea generateTestClassForJavaFile(final Long id, final InputStream inputStream) {
         Tarea tarea = null;
         CompilationUnit cu = StaticJavaParser.parse(inputStream);
         if (cu != null) {
             // Verificar si la clase tiene métodos públicos
             if (containsPublicMethods(cu)) {
                 tarea = generateTestClass(cu);
+                tarea.setId(id);
             }
         }
         return tarea;
     }
 
     @Override
-    public Tarea generateTestClassForJavaFile(String code) {
+    public Tarea generateTestClassForJavaFile(final Long id, final String code) {
         Tarea tarea = null;
         CompilationUnit cu = StaticJavaParser.parse(code);
         if (cu != null) {
             // Verificar si la clase tiene métodos públicos
             if (containsPublicMethods(cu)) {
                 tarea = generateTestClass(cu);
+                tarea.setId(id);
             }
         }
         return tarea;

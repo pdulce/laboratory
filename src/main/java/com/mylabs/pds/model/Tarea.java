@@ -1,31 +1,22 @@
 package com.mylabs.pds.model;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
+import jakarta.persistence.Id;
 import lombok.Getter;
 import lombok.Setter;
-
-import jakarta.persistence.*;
 
 import java.util.List;
 
 @Getter
 @Setter
-@Entity
 public class Tarea {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-
-    @Column
     private String testName;
 
-    @Column
     private String originPathToTest;
 
-    @Column
     private String type; //TESTFOLDER, TESTCLASS, TESTMETHOD
-
 
     public String getOriginPathToTest() {
         return originPathToTest;
@@ -35,22 +26,11 @@ public class Tarea {
         this.originPathToTest = originPathToTest;
     }
 
-    @Column(columnDefinition = "varchar(2000)")
     private String contents;
 
-    @Column
     private Long parentId;
 
-    @ManyToOne
-    @JoinColumn(name = "parent_task_id")
-    @JsonIgnore
-    //@Column(name = "parent_task_id")
-    private Tarea parentTaskId;
-
-    @OneToMany(mappedBy = "parentTaskId", cascade = CascadeType.ALL)
-    //@Transient
     private List<Tarea> childrenTasks;
-
 
     public Long getId() {
         return id;
@@ -82,14 +62,6 @@ public class Tarea {
 
     public void setContents(String contents) {
         this.contents = contents;
-    }
-
-    public Tarea getParentTaskId() {
-        return parentTaskId;
-    }
-
-    public void setParentTaskId(Tarea parentTaskId) {
-        this.parentTaskId = parentTaskId;
     }
 
     public void setParentId(Long idParent) {

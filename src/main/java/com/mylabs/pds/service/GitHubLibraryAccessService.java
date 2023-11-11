@@ -2,7 +2,6 @@ package com.mylabs.pds.service;
 
 import com.mylabs.pds.model.Tarea;
 import com.mylabs.pds.repository.ConfiguracionRepository;
-import com.mylabs.pds.repository.TareaRepository;
 import com.mylabs.pds.utils.IClassGenerator;
 import com.mylabs.pds.utils.ZipUtil;
 import org.kohsuke.github.GHBranch;
@@ -15,13 +14,13 @@ import org.springframework.stereotype.Service;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicLong;
 
 @Service
 public class GitHubLibraryAccessService {
 
     private static final String INIT_BASE_DIR = "/src/main/java";
-    @Autowired
-    private TareaRepository tareaRepository;
     @Autowired
     private ConfiguracionRepository configRepository;
 
@@ -51,63 +50,64 @@ public class GitHubLibraryAccessService {
             }
             // Recupera la información de los directorios de la rama 'develop'
             List<GHContent> ghDirContent = repository.getDirectoryContent(INIT_BASE_DIR, developBranch.getSHA1());
+            Long idInitial = 1L;
+            int i = 0;
             for (GHContent ghContent : ghDirContent) {
-                tareas.add(scanRecursiveDirectory(INIT_BASE_DIR.concat("/").concat(ghContent.getName()),
-                        repository, ghContent));
+                tareas.add(scanRecursiveDirectory(idInitial + (i++),
+                        INIT_BASE_DIR.concat("/").concat(ghContent.getName()), repository, ghContent));
             }
             byte[] bytesOfZipped = new ZipUtil().generarZipDesdeTareas(tareas);
-            tareas = this.tareaRepository.saveAll(tareas);
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
         return tareas;
     }
 
-    private Tarea scanRecursiveDirectory(final String baseDir, final GHRepository repository, final GHContent item) {
-
+    private Tarea scanRecursiveDirectory(final Long idAssigned, final String baseDir, final GHRepository repository, final GHContent item) {
+        Tarea tarea = null;
         if (item.isFile()) {
             //condicion de parada y retorno
-            if (item.getName().endsWith("java")) {
+            if (item.getType().equals("file") && item.getName().endsWith("java")) {
                 //me creo y me retorno para que me capture el padre invocador
                 try {
-                    Tarea tarea = this.classGenerator.generateTestClassForJavaFile(item.read());
+                    tarea = this.classGenerator.generateTestClassForJavaFile(idAssigned, item.read());
                     if (tarea != null) {
-                        tarea.setOriginPathToTest(baseDir); //baseDir parent
-                        return tarea;
-                    } else {
-                        return null;
+                        tarea.setId(idAssigned);
+                        tarea.setOriginPathToTest(baseDir); //baseDir
                     }
-
                 } catch (IOException ioExc) {
                     ioExc.printStackTrace();
-                    return null;
+                    tarea = null;
                 }
-            } else {
-                return null;
             }
         } else { //soy una carpeta
             // me creo y creo una lista de hijos que lleno con llamadas recursivas de cada uno
-            Tarea tareaFolder = new Tarea();
-            tareaFolder.setOriginPathToTest(baseDir); //baseDir parent
-            tareaFolder.setType("FOLDER");
-            tareaFolder.setTestName(item.getName());
-            tareaFolder.setChildrenTasks(new ArrayList<>());
+            tarea = new Tarea();
+            tarea.setId(idAssigned);
+            tarea.setOriginPathToTest(baseDir); //baseDir
+            tarea.setType("FOLDER");
+            tarea.setTestName(item.getName());
+            tarea.setChildrenTasks(new ArrayList<>());
             try {
                 List<GHContent> ghDirContent = repository.getDirectoryContent(baseDir);
-                ghDirContent.forEach((ghContent -> {
-                    Tarea taskChild = scanRecursiveDirectory(baseDir.concat("/").concat(ghContent.getName()), repository,
-                            ghContent);
-                    if (taskChild != null) {
-                        tareaFolder.getChildrenTasks().add(taskChild);
+                if (ghDirContent != null) {
+                    AtomicLong idNewAssigned = new AtomicLong(idAssigned * 10);
+                    Tarea finalTarea = tarea;
+                    ghDirContent.forEach((ghContent -> {
+                        Tarea taskChild = scanRecursiveDirectory(idNewAssigned.getAndIncrement(),
+                                baseDir.concat("/").concat(ghContent.getName()), repository, ghContent);
+                        if (taskChild != null) {
+                            taskChild.setParentId(idAssigned);
+                            finalTarea.getChildrenTasks().add(taskChild);
+                        }
                     }
+                    ));
                 }
-                ));
-                return tareaFolder;
-            } catch (IOException ioExc) {
+            } catch(IOException ioExc){
                 ioExc.printStackTrace();
-                return null;
             }
         }
+        return tarea;
     }
 
 

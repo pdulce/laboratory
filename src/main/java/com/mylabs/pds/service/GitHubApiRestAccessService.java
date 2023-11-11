@@ -2,7 +2,6 @@ package com.mylabs.pds.service;
 
 import com.mylabs.pds.model.Tarea;
 import com.mylabs.pds.repository.ConfiguracionRepository;
-import com.mylabs.pds.repository.TareaRepository;
 import com.mylabs.pds.utils.GitHubContent;
 import com.mylabs.pds.utils.IClassGenerator;
 import com.mylabs.pds.utils.ZipUtil;
@@ -29,9 +28,6 @@ public class GitHubApiRestAccessService {
 
     private static final String BRANCH_NAME = "develop";
     private RestTemplate restTemplate;
-
-    @Autowired
-    private TareaRepository tareaRepository;
 
     @Autowired
     private ConfiguracionRepository configRepository;
@@ -81,19 +77,21 @@ public class GitHubApiRestAccessService {
                 GitHubContent[].class);
         GitHubContent[] contentsInner = responseInner.getBody();
         List<Tarea> tareas = new ArrayList<>();
-        Long idParent = 1L;
+        Long idInitial = 1L;
+        int i = 0;
         for (GitHubContent contentItem : contentsInner) {
             // llamada recursiva para descubrir los fuentes java
-            tareas.add(scanDir(idParent, contentItem, baseUriPattern, INIT_BASE_DIR, BRANCH_NAME, entity));
+            tareas.add(scanDir(idInitial + (i++), contentItem, baseUriPattern, INIT_BASE_DIR, BRANCH_NAME,
+                    entity));
         }
         byte[] bytesOfZipped = new ZipUtil().generarZipDesdeTareas(tareas);
         //tareas = this.tareaRepository.saveAll(tareas);
         return tareas;
     }
 
-    private Tarea scanDir(final Long idParent, final GitHubContent content, final String baseUriPattern,
+    private Tarea scanDir(final Long idAssigned, final GitHubContent content, final String baseUriPattern,
                           final String initDirBase, final String branch, final HttpEntity<String> entity) {
-        Tarea tarea = null;
+        Tarea tarea;
         if (content.getType().equals("file") && content.getName().endsWith(".java")) {
             // El archivo es un archivo Java, lee su contenido
             String fileContentUrl = content.getDownload_url();
@@ -101,17 +99,15 @@ public class GitHubApiRestAccessService {
                     HttpMethod.GET, entity, String.class);
             String javaFileContent = fileResponse.getBody();
             //System.out.println("Contenido del archivo " + content.getName() + ":\n" + javaFileContent);
-            tarea = this.classGenerator.generateTestClassForJavaFile(javaFileContent);
+            tarea = this.classGenerator.generateTestClassForJavaFile(idAssigned, javaFileContent);
             if (tarea != null) {
-                tarea.setParentId(idParent);
+                tarea.setOriginPathToTest(initDirBase); //baseDir
             }
         } else {
             // me creo y creo una lista de hijos que lleno con llamadas recursivas de cada uno
             tarea = new Tarea();
-            if (idParent == 1L){
-                tarea.setId(1L);
-            }
-            tarea.setOriginPathToTest(initDirBase + "/" + content.getName()); //baseDir parent
+            tarea.setId(idAssigned);
+            tarea.setOriginPathToTest(initDirBase + "/" + content.getName()); //baseDir
             tarea.setType("FOLDER");
             tarea.setTestName(content.getName());
             tarea.setChildrenTasks(new ArrayList<>());
@@ -123,14 +119,15 @@ public class GitHubApiRestAccessService {
             ResponseEntity<GitHubContent[]> responseInner = restTemplate.exchange(newGithubApiUrl,
                     HttpMethod.GET, entity, GitHubContent[].class);
             GitHubContent[] contentsInner = responseInner.getBody();
-            Long idParentNew = idParent * 1000;
-            for (GitHubContent contentItem : contentsInner) {
-                Tarea tareaChild = scanDir(idParentNew, contentItem, baseUriPattern,
-                        initDirBase  + "/" + content.getName(), branch, entity);
-                if (tareaChild != null) {
-                    tareaChild.setId(idParentNew + 1);
-                    tareaChild.setParentId(idParent);
-                    tarea.getChildrenTasks().add(tareaChild);
+            if (contentsInner != null) {
+                long idNewAssigned = idAssigned * 10;
+                for (GitHubContent contentItem : contentsInner) {
+                    Tarea tareaChild = scanDir(idNewAssigned++, contentItem, baseUriPattern,
+                            initDirBase + "/" + content.getName(), branch, entity);
+                    if (tareaChild != null) {
+                        tareaChild.setParentId(idAssigned);
+                        tarea.getChildrenTasks().add(tareaChild);
+                    }
                 }
             }
         }
