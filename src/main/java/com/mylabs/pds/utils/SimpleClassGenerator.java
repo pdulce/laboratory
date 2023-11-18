@@ -73,6 +73,7 @@ public class SimpleClassGenerator implements IClassGenerator {
         Pattern methodPattern = Pattern.compile(regexMethod, Pattern.DOTALL);
         Matcher methodMatcher = methodPattern.matcher(sourceCode);
         long idTask = id * 100;
+        int counterLinesInClass = 0;
         while (methodMatcher.find()) {
             String contents = methodMatcher.groupCount() >= 1 ? methodMatcher.group(0) : "";
             int hastaDeclaracionArgs = contents.indexOf("(");
@@ -97,6 +98,7 @@ public class SimpleClassGenerator implements IClassGenerator {
             newTask.setContents(methodBuilder.toString());
             newTask.setNumLines(contarLineas(contents));
             childrenTasks.add(newTask);
+            counterLinesInClass += newTask.getNumLines();
         }
 
         testClass.append("}\n");
@@ -111,6 +113,7 @@ public class SimpleClassGenerator implements IClassGenerator {
         tarea.setTestName(className.concat("Test.java"));
         tarea.setOriginPathToTest(packageName.concat(".").concat(className).concat(".java"));
         tarea.setContents(testClass.toString());
+        tarea.setNumLines(counterLinesInClass);
         tarea.setChildren(childrenTasks);
 
         return tarea;
