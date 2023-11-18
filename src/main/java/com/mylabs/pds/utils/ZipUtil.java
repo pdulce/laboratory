@@ -11,7 +11,7 @@ import java.util.zip.ZipOutputStream;
 
 public class ZipUtil {
 
-    public byte[] generarZipDesdeTareas(List<Tarea> tareas) {
+    public final byte[] generarZipDesdeTareas(List<Tarea> tareas) {
 
         try (ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
             ZipOutputStream zipOutputStream = new ZipOutputStream(byteArrayOutputStream)) {

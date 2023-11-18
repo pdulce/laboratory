@@ -24,7 +24,7 @@ public class ConfiguracionService {
         return this.configRepository.findById(id).isPresent() ? this.configRepository.findById(id).get() : null;
     }
 
-    public Configuracion createConfiguracion(@RequestBody Configuracion configuracion) {
+    public final Configuracion createConfiguracion(@RequestBody Configuracion configuracion) {
 
         return this.configRepository.save(configuracion);
     }

@@ -21,39 +21,39 @@ public class GeneratorTestsController {
     private GitHubLibraryAccessService gitHubService;
 
     @GetMapping("/scanGitRepoWithHubParserAndAccessViaLibraryHub")
-    public List<Tarea> scanGitRepoWithHubParserAndAccessViaLibraryHub() {
+    public final List<Tarea> scanGitRepoWithHubParserAndAccessViaLibraryHub() {
         return gitHubService.scanRepository("pdulce", "laboratory", new GeneratorWithGitHubParser());
     }
 
     @GetMapping("/scanGitRepoWithJavaAssistAndAccessViaLibraryHub")
-    public List<Tarea> scanGitRepoWithJavaAssistAndAccessViaLibraryHub() {
+    public final List<Tarea> scanGitRepoWithJavaAssistAndAccessViaLibraryHub() {
         return gitHubService.scanRepository("pdulce", "laboratory", new GeneratorWithJavaAssist());
     }
 
     @GetMapping("/scanGitRepoWithRegexAndAccessViaLibraryHub")
-    public List<Tarea> scanGitRepoWithRegexAndAccessViaLibraryHub() {
+    public final List<Tarea> scanGitRepoWithRegexAndAccessViaLibraryHub() {
         return gitHubService.scanRepository("pdulce", "laboratory", new SimpleClassGenerator());
     }
 
     /****** METODOS PREFERIDOS PORQUE ATACAN VIA API-REST CON EL TOKEN DE GITLAB ****************/
     @GetMapping("/scanGitRepoWithHubParserAndAPIAccessGit")
-    public List<Tarea> scanGitRepoWithHubParserAndAPIAccessGit() {
+    public final List<Tarea> scanGitRepoWithHubParserAndAPIAccessGit() {
         return gitHubViaApiRest.scanRepository("pdulce", "laboratory", new GeneratorWithGitHubParser());
     }
 
     @GetMapping("/scanGitRepoWithJavaAssistAndAPIAccessGit")
-    public List<Tarea> scanGitRepoWithJavaAssistAndAPIAccessGit() {
+    public final List<Tarea> scanGitRepoWithJavaAssistAndAPIAccessGit() {
         return gitHubViaApiRest.scanRepository("pdulce", "laboratory", new GeneratorWithJavaAssist());
     }
 
     /****** METODO PREFERIDO PARA NO DEPENDER DE LIBRERIAS DE TERCEROS COMO LÑA DE GITHUB ************/
     @GetMapping("/scanGitRepoWithRegexAndAPIAccessGit")
-    public List<Tarea> scanGitRepoWithRegexAndAPIAccessGit() {
+    public final List<Tarea> scanGitRepoWithRegexAndAPIAccessGit() {
         return gitHubViaApiRest.scanRepository("pdulce", "laboratory", new SimpleClassGenerator());
     }
 
     @PostMapping("/scanTestCobertura")
-    public Tarea scanGitRepoTestWithRegexAndAPIAccessGit(@RequestBody Tarea metodos) {
+    public final Tarea scanGitRepoTestWithRegexAndAPIAccessGit(@RequestBody Tarea metodos) {
         if (metodos != null && metodos.getChildren() != null && !metodos.getChildren().isEmpty()) {
             return gitHubViaApiRest.scanTestCobertura("pdulce", "laboratory",
                     metodos.getChildren(), new SimpleClassGenerator());

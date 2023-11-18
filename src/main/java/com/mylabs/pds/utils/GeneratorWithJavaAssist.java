@@ -25,12 +25,12 @@ import java.util.List;
 public class GeneratorWithJavaAssist implements IClassGenerator {
 
     @Override
-    public List<Tarea> generateTestMethods(Long id, String sourceCode){
+    public final List<Tarea> generateTestMethods(Long id, String sourceCode){
         throw new NotImplementedException("not impleted yet");
     }
 
     @Override
-    public Tarea generateTestClassForJavaFile(final Long id, final InputStream inputStream) {
+    public final Tarea generateTestClassForJavaFile(final Long id, final InputStream inputStream) {
         try {
             Tarea tarea = generateTestClassFrom(ClassPool.getDefault().makeClass(inputStream));
             tarea.setId(id);
@@ -41,7 +41,7 @@ public class GeneratorWithJavaAssist implements IClassGenerator {
     }
 
     @Override
-    public Tarea generateTestClassForJavaFile(final Long id, final String byteClassCode) {
+    public final Tarea generateTestClassForJavaFile(final Long id, final String byteClassCode) {
         StringWriter stringWriter = new StringWriter();
         StringReader reader = new StringReader(byteClassCode);
         char[] buffer = new char[1024];
@@ -83,7 +83,7 @@ public class GeneratorWithJavaAssist implements IClassGenerator {
         method.getMethodInfo().addAttribute(annotationsAttribute);
     }
 
-    public Tarea generateTestClassFrom(final CtClass targetClass) {
+    public final Tarea generateTestClassFrom(final CtClass targetClass) {
 
         List<Tarea> childrenTasks = new ArrayList<>();
         try {

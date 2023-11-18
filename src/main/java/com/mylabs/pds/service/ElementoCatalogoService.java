@@ -18,7 +18,7 @@ public class ElementoCatalogoService {
         return this.elementoCatalogoRepository.findAll();
     }
 
-    public ElementoCatalogo createElemento(@RequestBody ElementoCatalogo elementoCatalogo) {
+    public final ElementoCatalogo createElemento(@RequestBody ElementoCatalogo elementoCatalogo) {
         return this.elementoCatalogoRepository.save(elementoCatalogo);
     }
 }

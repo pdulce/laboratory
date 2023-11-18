@@ -52,7 +52,7 @@ public class GitHubApiRestAccessService {
         headers.set("Authorization", "token " + token);
         return String.format(baseUriPattern, this.owner, this.repositoryName, INIT_BASE_DIR , BRANCH_NAME);
     }
-    public List<Tarea> scanRepository(final String owner, final String repositoryName,
+    public final List<Tarea> scanRepository(final String owner, final String repositoryName,
                                       final IClassGenerator classGenerator) {
 
         this.classGenerator = classGenerator;
@@ -129,7 +129,7 @@ public class GitHubApiRestAccessService {
         return tarea;
     }
 
-    public Tarea scanTestCobertura(final String owner, final String repositoryName, final List<Tarea> metodos,
+    public final Tarea scanTestCobertura(final String owner, final String repositoryName, final List<Tarea> metodos,
                                       final IClassGenerator classGenerator) {
 
         this.classGenerator = classGenerator;

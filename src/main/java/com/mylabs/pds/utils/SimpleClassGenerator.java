@@ -12,7 +12,7 @@ import java.util.regex.Pattern;
 public class SimpleClassGenerator implements IClassGenerator {
 
     @Override
-    public List<Tarea> generateTestMethods(Long id, String sourceCode){
+    public final List<Tarea> generateTestMethods(Long id, String sourceCode){
         List<Tarea> listOfTestMethods = new ArrayList<>();
         // Buscamos la clase de Test los métodos públicos
         String regex = "@Test[\\s\\w\\n\\r]*(.*?)*?(.*?)\\}";
@@ -42,28 +42,23 @@ public class SimpleClassGenerator implements IClassGenerator {
 
 
     @Override
-    public Tarea generateTestClassForJavaFile(final Long id, final String sourceCode) {
+    public final Tarea generateTestClassForJavaFile(final Long id, final String sourceCode) {
         // Patrones para extraer información del código fuente
         Pattern packagePattern = Pattern.compile("package\\s+([\\w.]+);");
         Pattern classPattern = Pattern.compile("public\\s+class\\s+(\\w+)\\s*\\{");
-
         Matcher packageMatcher = packagePattern.matcher(sourceCode);
         Matcher classMatcher = classPattern.matcher(sourceCode);
-
         String packageName = "";
         String className = "";
-
         // Buscar el package y el nombre de la clase
         while (packageMatcher.find()) {
             packageName = packageMatcher.group(1);
         }
-
         while (classMatcher.find()) {
             className = classMatcher.group(1);
         }
 
         List<Tarea> childrenTasks = new ArrayList<>();
-
         // Crear la clase de Test basada en SpringBoot JPA Data y H2
         StringBuilder testClass = new StringBuilder();
         testClass.append("package ").append(packageName).append(";\n\n");
@@ -74,7 +69,7 @@ public class SimpleClassGenerator implements IClassGenerator {
         testClass.append("public class ").append(className).append("Test {\n\n");
 
         // Obtener los métodos públicos
-        String regexMethod = "\\b(public\\s+)?\\w+\\s+\\w+\\s*\\([^)]*\\)[\\s]*\\{(.*?)\\}";
+        String regexMethod = "public final\\s+(.*?)\\{(.*?)\\}";
         Pattern methodPattern = Pattern.compile(regexMethod, Pattern.DOTALL);
         Matcher methodMatcher = methodPattern.matcher(sourceCode);
         long idTask = id * 100;
@@ -122,7 +117,7 @@ public class SimpleClassGenerator implements IClassGenerator {
     }
 
 
-    public Tarea generateTestClassForJavaFile(final Long id, final InputStream inputStream) {
+    public final Tarea generateTestClassForJavaFile(final Long id, final InputStream inputStream) {
         throw new NotImplementedException("not implemented yet");
     }
 
@@ -141,7 +136,31 @@ public class SimpleClassGenerator implements IClassGenerator {
                 "\t}\n" +
                 "\n" +
                 "}\n";
-        sampleGen.generateTestMethods(1L, source);
+        System.out.println("sampleGen.generateTestMethods(1L, source).size(): "
+                + sampleGen.generateTestMethods(1L, source).size());
+
+
+        source = "package com.mylabs.pds.utils;\n" +
+                "\n" +
+                "import com.mylabs.pds.model.Tarea;\n" +
+                "\n" +
+                "import java.util.List;\n" +
+                "\n" +
+                "public class PdfUtil {\n" +
+                "\n" +
+                "    public final byte[] getJavaMethodsCoverageReport(final List<Tarea> metodos) {\n" +
+                "        System.out.println(\"generando report en df de la cobertura de métodos java por invocación desde test-prj...\");\n" +
+                "        System.out.println(\"...report en df generado con éxito.\");\n" +
+                "\n" +
+                "        //debería pintar una tabla con pocos campos\n" +
+                "\n" +
+                "        return null;\n" +
+                "\n" +
+                "    }\n" +
+                "\n" +
+                "}\n";
+        System.out.println("sampleGen.generateTestClassForJavaFile(1L, source).contents:::: \n\n"
+                + sampleGen.generateTestClassForJavaFile(1L, source).getContents());
     }
 
 }

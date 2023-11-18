@@ -19,7 +19,7 @@ public class VersionService {
         return this.versionRepository.findAll();
     }
 
-    public Version createVersion(@RequestBody Version version) {
+    public final Version createVersion(@RequestBody Version version) {
 
         return this.versionRepository.save(version);
     }

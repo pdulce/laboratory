@@ -32,7 +32,7 @@ public class GeneratorWithGitHubParser implements IClassGenerator {
     }
 
     @Override
-    public Tarea generateTestClassForJavaFile(final Long id, final InputStream inputStream) {
+    public final Tarea generateTestClassForJavaFile(final Long id, final InputStream inputStream) {
         Tarea tarea = null;
         CompilationUnit cu = StaticJavaParser.parse(inputStream);
         if (cu != null) {
@@ -46,7 +46,7 @@ public class GeneratorWithGitHubParser implements IClassGenerator {
     }
 
     @Override
-    public Tarea generateTestClassForJavaFile(final Long id, final String code) {
+    public final Tarea generateTestClassForJavaFile(final Long id, final String code) {
         Tarea tarea = null;
         CompilationUnit cu = StaticJavaParser.parse(code);
         if (cu != null) {
@@ -72,7 +72,7 @@ public class GeneratorWithGitHubParser implements IClassGenerator {
         return false; // No se encontraron métodos públicos
     }
 
-    public Tarea generateTestClass(final Long id, final CompilationUnit cu) {
+    public final Tarea generateTestClass(final Long id, final CompilationUnit cu) {
 
         if (cu != null) {
             try {

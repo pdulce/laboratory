@@ -27,7 +27,7 @@ public class GitHubLibraryAccessService {
     private String owner;
     private String repositoryName;
 
-    public List<Tarea> scanRepository(final String owner, final String repositoryName,
+    public final List<Tarea> scanRepository(final String owner, final String repositoryName,
                                       final IClassGenerator classGenerator) {
         this.classGenerator = classGenerator;
         this.repositoryName = repositoryName;

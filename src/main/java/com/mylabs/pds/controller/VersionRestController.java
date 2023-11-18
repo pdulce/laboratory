@@ -15,17 +15,16 @@ public class VersionRestController {
     private VersionService versionService;
 
     @GetMapping("/getAll")
-    public List<Version> getAllVersiones() {
+    public final List<Version> getAllVersiones() {
 
         return versionService.getAllVersiones();
     }
 
     @PostMapping("/create/{version}")
-    public Version createVersion(@RequestBody Version version) {
+    public final Version createVersion(@RequestBody Version version) {
 
         return versionService.createVersion(version);
     }
-
 
     // Otros métodos para actualizar, eliminar, etc.
 

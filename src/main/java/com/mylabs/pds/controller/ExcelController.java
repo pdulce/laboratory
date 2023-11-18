@@ -16,7 +16,7 @@ public class ExcelController {
     private ExcelService excelService;
 
     @GetMapping("/write")
-    public String writeExcel() {
+    public final String writeExcel() {
         try {
             excelService.writeToExcel();
             return "Datos escritos en Excel correctamente.";

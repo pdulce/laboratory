@@ -10,7 +10,7 @@ import java.io.IOException;
 @Service
 public class ExcelService {
 
-    public void writeToExcel() throws IOException {
+    public final void writeToExcel() throws IOException {
         String filePath = "C:\\Users\\pedro.dulce\\Downloads\\2022-7207 Lote 1 - Oficina de Proyectos.xlsx";
 
         try (Workbook workbook = new XSSFWorkbook()) {
