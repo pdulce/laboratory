@@ -19,21 +19,26 @@ public class SimpleClassGenerator implements IClassGenerator {
         Pattern methodPattern = Pattern.compile(regex, Pattern.DOTALL);
         Matcher methodMatcher = methodPattern.matcher(sourceCode);
         while (methodMatcher.find()) {
-            String methodBodyContent = "";
-            if (methodMatcher.groupCount() >= 1) {
-                methodBodyContent = methodMatcher.group(0);
-            }
             Tarea newTask = new Tarea();
+            newTask.setContents(methodMatcher.groupCount() >= 1 ? methodMatcher.group(0) : "");
             newTask.setParentId(id);
             newTask.setType("METHOD");
-            newTask.setTestName(methodMatcher.group().split("void ")[1]);
-            newTask.setContents(methodBodyContent);
+            String methodDeclaration = methodMatcher.group().split("void ")[1];
+            int startArguments = methodDeclaration.indexOf("(");
+            newTask.setTestName(methodDeclaration.substring(0, startArguments).trim());
+            newTask.setNumLines(contarLineas(newTask.getContents()) - 1 /*no contabilizamos la anotación*/);
             listOfTestMethods.add(newTask);
-
         }
         return listOfTestMethods;
     }
 
+    private static int contarLineas(String texto) {
+        if (texto == null || texto.isEmpty()) {
+            return 0;
+        }
+        String[] lineas = texto.split("\r\n|\r|\n");
+        return lineas.length;
+    }
 
 
     @Override

@@ -160,23 +160,19 @@ public class GitHubApiRestAccessService {
             while (!esInvocadoAlMenosUnaVez && j < testMetodos.size()) {
                 Tarea testMethod = testMetodos.get(j++);
                 String qName = metodo.getqName();
-                String[] splitterOfQName = qName.split(".");
+                String[] splitterOfQName = qName.split("\\.");
                 String methodName = splitterOfQName[splitterOfQName.length - 1];
                 metodo.setMethodName(methodName);
+                String classOfMethod = splitterOfQName[splitterOfQName.length - 2];
+                metodo.setClassName(classOfMethod);
 
-                qName = qName.replaceAll("." + methodName, "");
-                splitterOfQName = qName.split(".");
-                String classOfMethod = splitterOfQName[splitterOfQName.length - 1];
-                metodo.setClassName(methodName);
-
-                qName = qName.replaceAll("." + classOfMethod, "");
-                splitterOfQName = qName.split(".");
-                String packageOfMethod = splitterOfQName[splitterOfQName.length - 1];
+                String packageOfMethod = qName.replaceAll("."+ classOfMethod + "." + methodName, "");
                 metodo.setPackageName(packageOfMethod);
 
                 if (testMethod.getContents().indexOf(packageOfMethod) != -1
                         && testMethod.getContents().indexOf(classOfMethod) != -1
-                        && testMethod.getContents().indexOf(methodName) != -1) {
+                        && (testMethod.getContents().indexOf(methodName + " (") != -1
+                        || testMethod.getContents().indexOf(methodName + "(") != -1)) {
                     esInvocadoAlMenosUnaVez = true;
                 }
             }
@@ -204,8 +200,6 @@ public class GitHubApiRestAccessService {
             }
         } else {
             // hago llamada recursiva hasta que encuentre una clase .java
-            System.out.println("el archivo "+  content.getName() + " es un " + content.getType()
-                    + "...lanzo una llamada recursiva");
             String newGithubApiUrl = String.format(baseUriPattern, this.owner, this.repositoryName,
                     initDirBase + "/" + content.getName(), branch);
             ResponseEntity<GitHubContent[]> responseInner = restTemplate.exchange(newGithubApiUrl,
