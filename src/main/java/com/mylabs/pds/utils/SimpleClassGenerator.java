@@ -106,7 +106,7 @@ public class SimpleClassGenerator implements IClassGenerator {
             return null;
         }
         // Crear la instancia de Tarea con el resultado
-        System.out.println(testClass.toString());
+        //System.out.println(testClass.toString());
         Tarea tarea = new Tarea();
         tarea.setId(id);
         tarea.setType("CLASS");
