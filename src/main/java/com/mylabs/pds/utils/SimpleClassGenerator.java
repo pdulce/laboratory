@@ -15,27 +15,23 @@ public class SimpleClassGenerator implements IClassGenerator {
     public List<Tarea> generateTestMethods(Long id, String sourceCode){
         List<Tarea> listOfTestMethods = new ArrayList<>();
         // Buscamos la clase de Test los métodos públicos
-        Pattern methodPattern = Pattern.compile("public\\s+(\\w+)\\s+(\\w+)\\s*\\([^)]*\\)\\s*\\{");
+        String regex = "@Test[\\s\\w\\n\\r]*[\\s\\w]*void[\\s\\w]*[a-zA-Z0-9_]*[\\s\\w]*[\\s\\w]*?(.*?)\\}";
+        //@Test[\\{(.*?)\\}"
+        Pattern methodPattern = Pattern.compile(regex, Pattern.DOTALL);
         Matcher methodMatcher = methodPattern.matcher(sourceCode);
-        long idTask = id * 100;
         while (methodMatcher.find()) {
-            String methodName = methodMatcher.group(2);
+            String methodBodyContent = "";
+            if (methodMatcher.groupCount() >= 1) {
+                methodBodyContent = methodMatcher.group(1);
+            }
             Tarea newTask = new Tarea();
-            newTask.setId(idTask++);
             newTask.setParentId(id);
             newTask.setType("METHOD");
-            newTask.setTestName(methodName);
-            newTask.setContents("TODO::::falta recuperar el propio body del metodo");
+            newTask.setTestName(methodMatcher.group().split("void ")[1]);
+            newTask.setContents(methodBodyContent);
             listOfTestMethods.add(newTask);
+
         }
-
-        Pattern methodPattern2 = Pattern.compile("@Test");
-        Matcher methodMatcher2 = methodPattern2.matcher(sourceCode);
-        while (methodMatcher2.find()) {
-            String methodName = methodMatcher.group(2);
-        }
-
-
         return listOfTestMethods;
     }
 
