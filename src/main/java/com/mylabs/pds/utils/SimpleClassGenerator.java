@@ -16,13 +16,12 @@ public class SimpleClassGenerator implements IClassGenerator {
         List<Tarea> listOfTestMethods = new ArrayList<>();
         // Buscamos la clase de Test los métodos públicos
         String regex = "@Test[\\s\\w\\n\\r]*[\\s\\w]*void[\\s\\w]*[a-zA-Z0-9_]*[\\s\\w]*[\\s\\w]*?(.*?)\\}";
-        //@Test[\\{(.*?)\\}"
         Pattern methodPattern = Pattern.compile(regex, Pattern.DOTALL);
         Matcher methodMatcher = methodPattern.matcher(sourceCode);
         while (methodMatcher.find()) {
             String methodBodyContent = "";
             if (methodMatcher.groupCount() >= 1) {
-                methodBodyContent = methodMatcher.group(1);
+                methodBodyContent = methodMatcher.group(0);
             }
             Tarea newTask = new Tarea();
             newTask.setParentId(id);
