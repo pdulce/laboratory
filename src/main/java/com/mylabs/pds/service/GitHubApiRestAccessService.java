@@ -4,6 +4,7 @@ import com.mylabs.pds.model.Tarea;
 import com.mylabs.pds.repository.ConfiguracionRepository;
 import com.mylabs.pds.utils.GitHubContent;
 import com.mylabs.pds.utils.IClassGenerator;
+import com.mylabs.pds.utils.PdfUtil;
 import com.mylabs.pds.utils.ZipUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.web.client.RestTemplateBuilder;
@@ -21,17 +22,15 @@ import java.util.List;
 
 @Service
 public class GitHubApiRestAccessService {
-
     private static final String GITHUB_API_URL = "https://api.github.com";
     private static final String GITLAB_API_URL = "https://giss.gitlab.repo...elque sea";
     private static final String INIT_BASE_DIR = "/src/main/java";
-
+    private static final String INIT_BASE_TEST_DIR = "/src/test/java";
     private static final String BRANCH_NAME = "develop";
-    private RestTemplate restTemplate;
 
     @Autowired
     private ConfiguracionRepository configRepository;
-
+    private RestTemplate restTemplate;
     private IClassGenerator classGenerator;
     private String owner;
     private String repositoryName;
@@ -39,7 +38,6 @@ public class GitHubApiRestAccessService {
     public GitHubApiRestAccessService(RestTemplateBuilder restTemplateBuilder) {
         this.restTemplate = restTemplateBuilder.build();
     }
-
     private String accessGitLab(final HttpHeaders headers) {
         String token = this.configRepository.findById(2L).isPresent()
                 ? this.configRepository.findById(2L).get().getCodigo() : "unknown";
@@ -47,7 +45,6 @@ public class GitHubApiRestAccessService {
         headers.set("PRIVATE-TOKEN", token); // Use "PRIVATE-TOKEN" header for GitLab
         return String.format(baseUriPattern, this.owner, this.repositoryName, INIT_BASE_DIR, BRANCH_NAME);
     }
-
     private String accessGitHub(final HttpHeaders headers) {
         String token = this.configRepository.findById(1L).isPresent()
                 ? this.configRepository.findById(1L).get().getCodigo() : "unknown";
@@ -55,7 +52,6 @@ public class GitHubApiRestAccessService {
         headers.set("Authorization", "token " + token);
         return String.format(baseUriPattern, this.owner, this.repositoryName, INIT_BASE_DIR , BRANCH_NAME);
     }
-
     public List<Tarea> scanRepository(final String owner, final String repositoryName,
                                       final IClassGenerator classGenerator) {
 
@@ -88,7 +84,6 @@ public class GitHubApiRestAccessService {
         //tareas = this.tareaRepository.saveAll(tareas);
         return tareas;
     }
-
     private Tarea scanDir(final Long idAssigned, final GitHubContent content, final String baseUriPattern,
                           final String initDirBase, final String branch, final HttpEntity<String> entity) {
         Tarea tarea;
@@ -110,7 +105,7 @@ public class GitHubApiRestAccessService {
             tarea.setOriginPathToTest(initDirBase + "/" + content.getName()); //baseDir
             tarea.setType("FOLDER");
             tarea.setTestName(content.getName());
-            tarea.setChildrenTasks(new ArrayList<>());
+            tarea.setChildren(new ArrayList<>());
             //tarea = this.tareaRepository.save(tarea);
             System.out.println("el archivo "+  content.getName() + " es un " + content.getType()
                     + "...lanzo una llamada recursiva");
@@ -126,12 +121,105 @@ public class GitHubApiRestAccessService {
                             initDirBase + "/" + content.getName(), branch, entity);
                     if (tareaChild != null) {
                         tareaChild.setParentId(idAssigned);
-                        tarea.getChildrenTasks().add(tareaChild);
+                        tarea.getChildren().add(tareaChild);
                     }
                 }
             }
         }
         return tarea;
     }
+
+    public Tarea scanTestCobertura(final String owner, final String repositoryName, final List<Tarea> metodos,
+                                      final IClassGenerator classGenerator) {
+
+        this.classGenerator = classGenerator;
+        this.repositoryName = repositoryName;
+        this.owner = owner;
+        HttpHeaders headers = new HttpHeaders();
+        headers.setAccept(Collections.singletonList(MediaType.APPLICATION_JSON));
+        String newGitApiUrl = accessGitHub(headers);
+        String baseUriPattern = GITHUB_API_URL + "/repos/%s/%s/contents%s?ref=%s";
+
+        HttpEntity<String> entity = new HttpEntity<>(headers);
+        ResponseEntity<GitHubContent[]> responseInner = restTemplate.exchange(newGitApiUrl, HttpMethod.GET, entity,
+                GitHubContent[].class);
+        GitHubContent[] contentsInner = responseInner.getBody();
+        List<Tarea> testMetodos = new ArrayList<>();
+        long idInitial = 1L;
+        int i = 0;
+        for (GitHubContent contentItem : contentsInner) {
+            // recursive-call para descubrir la lista de test-methods, y como children, los métodos de /main invocados
+            scanTestDir(idInitial + (i++), contentItem, baseUriPattern, INIT_BASE_TEST_DIR,
+                    BRANCH_NAME, entity, testMetodos);
+        }
+
+        // recorremos la lista de metodos; para cada uno, vemos si tiene o no aparición en el conjunto de test-methods
+        metodos.forEach((metodo) -> {
+            boolean esInvocadoAlMenosUnaVez = false;
+            int j = 0;
+            while (!esInvocadoAlMenosUnaVez && j < testMetodos.size()) {
+                Tarea testMethod = testMetodos.get(j++);
+                String qName = metodo.getqName();
+                String[] splitterOfQName = qName.split(".");
+                String methodName = splitterOfQName[splitterOfQName.length - 1];
+                metodo.setMethodName(methodName);
+
+                qName = qName.replaceAll("." + methodName, "");
+                splitterOfQName = qName.split(".");
+                String classOfMethod = splitterOfQName[splitterOfQName.length - 1];
+                metodo.setClassName(methodName);
+
+                qName = qName.replaceAll("." + classOfMethod, "");
+                splitterOfQName = qName.split(".");
+                String packageOfMethod = splitterOfQName[splitterOfQName.length - 1];
+                metodo.setPackageName(packageOfMethod);
+
+                if (testMethod.getContents().indexOf(packageOfMethod) != -1
+                        && testMethod.getContents().indexOf(classOfMethod) != -1
+                        && testMethod.getContents().indexOf(methodName) != -1) {
+                    esInvocadoAlMenosUnaVez = true;
+                }
+            }
+            metodo.setCoverage(esInvocadoAlMenosUnaVez);
+        });
+
+        byte[] javaMethodsCoverageReport = new PdfUtil().getJavaMethodsCoverageReport(metodos);
+        Tarea tarea = new Tarea();
+        tarea.setId(1L);
+        tarea.setArrayOfBytes(javaMethodsCoverageReport);
+        return tarea;
+    }
+    private void scanTestDir(final Long idAssigned, final GitHubContent content, final String baseUriPattern,
+                          final String initDirBase, final String branch, final HttpEntity<String> entity,
+                              final List<Tarea> tareasAcumuladas) {
+
+        if (content.getType().equals("file") && content.getName().endsWith(".java")) {
+            String fileContentUrl = content.getDownload_url();
+            ResponseEntity<String> fileResponse = restTemplate.exchange(fileContentUrl,
+                    HttpMethod.GET, entity, String.class);
+            String javaFileContent = fileResponse.getBody();
+            List<Tarea> tareasTestMethods = this.classGenerator.generateTestMethods(idAssigned, javaFileContent);
+            if (tareasTestMethods != null && !tareasTestMethods.isEmpty()) {
+                tareasAcumuladas.addAll(tareasTestMethods);
+            }
+        } else {
+            // hago llamada recursiva hasta que encuentre una clase .java
+            System.out.println("el archivo "+  content.getName() + " es un " + content.getType()
+                    + "...lanzo una llamada recursiva");
+            String newGithubApiUrl = String.format(baseUriPattern, this.owner, this.repositoryName,
+                    initDirBase + "/" + content.getName(), branch);
+            ResponseEntity<GitHubContent[]> responseInner = restTemplate.exchange(newGithubApiUrl,
+                    HttpMethod.GET, entity, GitHubContent[].class);
+            GitHubContent[] contentsInner = responseInner.getBody();
+            if (contentsInner != null) {
+                long idNewAssigned = idAssigned * 10;
+                for (GitHubContent contentItem : contentsInner) {
+                    scanTestDir(idNewAssigned++, contentItem, baseUriPattern,
+                            initDirBase + "/" + content.getName(), branch, entity, tareasAcumuladas);
+                }
+            }
+        }
+    }
+
 
 }

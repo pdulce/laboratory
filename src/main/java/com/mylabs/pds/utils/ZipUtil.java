@@ -51,12 +51,12 @@ public class ZipUtil {
             zipOutputStream.putNextEntry(zipEntry); // Agregar la entrada al archivo Zip
             zipOutputStream.write(tarea.getContents().getBytes()); // Agregar el contenido de la tarea al archivo Zip
             zipOutputStream.closeEntry(); // Cerrar la entrada actual
-        } else if (tarea.getType().contentEquals("FOLDER") && !tarea.getChildrenTasks().isEmpty()) {
+        } else if (tarea.getType().contentEquals("FOLDER") && !tarea.getChildren().isEmpty()) {
             // hacer llamada recursiva
             String folderPath = parentDirPath + tarea.getTestName() + "/";
             ZipEntry zipEntry = new ZipEntry(folderPath); // Define el nombre de la carpeta
             zipOutputStream.putNextEntry(zipEntry); // Agregar la entrada al archivo Zip
-            tarea.getChildrenTasks().forEach((child) ->{
+            tarea.getChildren().forEach((child) ->{
                 try {
                     scanRecursiveTreeOfTasks(folderPath, child, zipOutputStream);
                 } catch (IOException e) {

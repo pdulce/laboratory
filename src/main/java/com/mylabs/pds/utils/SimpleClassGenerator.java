@@ -12,6 +12,36 @@ import java.util.regex.Pattern;
 public class SimpleClassGenerator implements IClassGenerator {
 
     @Override
+    public List<Tarea> generateTestMethods(Long id, String sourceCode){
+        List<Tarea> listOfTestMethods = new ArrayList<>();
+        // Buscamos la clase de Test los métodos públicos
+        Pattern methodPattern = Pattern.compile("public\\s+(\\w+)\\s+(\\w+)\\s*\\([^)]*\\)\\s*\\{");
+        Matcher methodMatcher = methodPattern.matcher(sourceCode);
+        long idTask = id * 100;
+        while (methodMatcher.find()) {
+            String methodName = methodMatcher.group(2);
+            Tarea newTask = new Tarea();
+            newTask.setId(idTask++);
+            newTask.setParentId(id);
+            newTask.setType("METHOD");
+            newTask.setTestName(methodName);
+            newTask.setContents("TODO::::falta recuperar el propio body del metodo");
+            listOfTestMethods.add(newTask);
+        }
+
+        Pattern methodPattern2 = Pattern.compile("@Test");
+        Matcher methodMatcher2 = methodPattern2.matcher(sourceCode);
+        while (methodMatcher2.find()) {
+            String methodName = methodMatcher.group(2);
+        }
+
+
+        return listOfTestMethods;
+    }
+
+
+
+    @Override
     public Tarea generateTestClassForJavaFile(final Long id, final String sourceCode) {
         // Patrones para extraer información del código fuente
         Pattern packagePattern = Pattern.compile("package\\s+([\\w.]+);");
@@ -82,7 +112,7 @@ public class SimpleClassGenerator implements IClassGenerator {
         tarea.setTestName(className.concat("Test.java"));
         tarea.setOriginPathToTest(packageName.concat(".").concat(className).concat(".java"));
         tarea.setContents(testClass.toString());
-        tarea.setChildrenTasks(childrenTasks);
+        tarea.setChildren(childrenTasks);
 
         return tarea;
     }

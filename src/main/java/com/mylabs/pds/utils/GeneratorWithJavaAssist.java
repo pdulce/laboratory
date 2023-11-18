@@ -11,6 +11,7 @@ import javassist.bytecode.AnnotationsAttribute;
 import javassist.bytecode.ClassFile;
 import javassist.bytecode.ConstPool;
 import javassist.bytecode.annotation.Annotation;
+import org.apache.commons.lang3.NotImplementedException;
 
 
 import java.io.ByteArrayInputStream;
@@ -22,6 +23,11 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class GeneratorWithJavaAssist implements IClassGenerator {
+
+    @Override
+    public List<Tarea> generateTestMethods(Long id, String sourceCode){
+        throw new NotImplementedException("not impleted yet");
+    }
 
     @Override
     public Tarea generateTestClassForJavaFile(final Long id, final InputStream inputStream) {
@@ -115,7 +121,7 @@ public class GeneratorWithJavaAssist implements IClassGenerator {
             tarea.setType("CLASS");
             tarea.setTestName(className.concat("Test.java"));
             tarea.setOriginPathToTest(targetClass.getPackageName().concat(".").concat(targetClass.getSimpleName()));
-            tarea.setChildrenTasks(childrenTasks);
+            tarea.setChildren(childrenTasks);
             tarea.setContents(testClass.toString());
             // Puedes imprimir el contenido de la clase de prueba o escribirlo en un archivo
             System.out.println(testClass.toClass().toString());

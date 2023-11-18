@@ -17,6 +17,7 @@ import com.github.javaparser.ast.body.MethodDeclaration;
 import com.github.javaparser.ast.body.TypeDeclaration;
 import com.github.javaparser.ast.stmt.BlockStmt;
 import com.mylabs.pds.model.Tarea;
+import org.apache.commons.lang3.NotImplementedException;
 
 import java.io.InputStream;
 import java.util.ArrayList;
@@ -24,6 +25,11 @@ import java.util.List;
 import java.util.concurrent.atomic.AtomicLong;
 
 public class GeneratorWithGitHubParser implements IClassGenerator {
+
+    @Override
+    public List<Tarea> generateTestMethods(Long id, String sourceCode){
+        throw new NotImplementedException("not impleted yet");
+    }
 
     @Override
     public Tarea generateTestClassForJavaFile(final Long id, final InputStream inputStream) {
@@ -117,7 +123,7 @@ public class GeneratorWithGitHubParser implements IClassGenerator {
                 tarea.setOriginPathToTest(testClass.getPackageDeclaration().get().getNameAsString().
                         concat(".").concat(className).concat(".java"));
                 tarea.setContents(testClass.toString());
-                tarea.setChildrenTasks(childrenTasks);
+                tarea.setChildren(childrenTasks);
                 return tarea;
             } catch (Throwable exc) {
                 exc.printStackTrace();

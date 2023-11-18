@@ -14,7 +14,6 @@ import org.springframework.stereotype.Service;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
 
 @Service
@@ -87,7 +86,7 @@ public class GitHubLibraryAccessService {
             tarea.setOriginPathToTest(baseDir); //baseDir
             tarea.setType("FOLDER");
             tarea.setTestName(item.getName());
-            tarea.setChildrenTasks(new ArrayList<>());
+            tarea.setChildren(new ArrayList<>());
             try {
                 List<GHContent> ghDirContent = repository.getDirectoryContent(baseDir);
                 if (ghDirContent != null) {
@@ -98,7 +97,7 @@ public class GitHubLibraryAccessService {
                                 baseDir.concat("/").concat(ghContent.getName()), repository, ghContent);
                         if (taskChild != null) {
                             taskChild.setParentId(idAssigned);
-                            finalTarea.getChildrenTasks().add(taskChild);
+                            finalTarea.getChildren().add(taskChild);
                         }
                     }
                     ));

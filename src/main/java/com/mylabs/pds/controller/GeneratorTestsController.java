@@ -7,9 +7,7 @@ import com.mylabs.pds.utils.GeneratorWithGitHubParser;
 import com.mylabs.pds.utils.GeneratorWithJavaAssist;
 import com.mylabs.pds.utils.SimpleClassGenerator;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
@@ -53,5 +51,15 @@ public class GeneratorTestsController {
     public List<Tarea> scanGitRepoWithRegexAndAPIAccessGit() {
         return gitHubViaApiRest.scanRepository("pdulce", "laboratory", new SimpleClassGenerator());
     }
+
+    @PostMapping("/scanTestCobertura")
+    public Tarea scanGitRepoTestWithRegexAndAPIAccessGit(@RequestBody Tarea metodos) {
+        if (metodos != null && metodos.getChildren() != null && !metodos.getChildren().isEmpty()) {
+            return gitHubViaApiRest.scanTestCobertura("pdulce", "laboratory",
+                    metodos.getChildren(), new SimpleClassGenerator());
+        }
+        return null;
+    }
+
 
 }
