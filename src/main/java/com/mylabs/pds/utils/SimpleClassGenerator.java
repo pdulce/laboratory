@@ -15,7 +15,7 @@ public class SimpleClassGenerator implements IClassGenerator {
     public List<Tarea> generateTestMethods(Long id, String sourceCode){
         List<Tarea> listOfTestMethods = new ArrayList<>();
         // Buscamos la clase de Test los métodos públicos
-        String regex = "@Test[\\s\\w\\n\\r]*[\\s\\w]*void[\\s\\w]*[a-zA-Z0-9_]*[\\s\\w]*[\\s\\w]*?(.*?)\\}";
+        String regex = "@Test[\\s\\w\\n\\r]*(.*?)*?(.*?)\\}";
         Pattern methodPattern = Pattern.compile(regex, Pattern.DOTALL);
         Matcher methodMatcher = methodPattern.matcher(sourceCode);
         while (methodMatcher.find()) {
@@ -124,6 +124,24 @@ public class SimpleClassGenerator implements IClassGenerator {
 
     public Tarea generateTestClassForJavaFile(final Long id, final InputStream inputStream) {
         throw new NotImplementedException("not implemented yet");
+    }
+
+    public static void main(String[] args) {
+        SimpleClassGenerator sampleGen = new SimpleClassGenerator();
+        String source = "package com.mylabs.pds;\n" +
+                "\n" +
+                "import org.junit.jupiter.api.Test;\n" +
+                "import org.springframework.boot.test.context.SpringBootTest;\n" +
+                "\n" +
+                "@SpringBootTest\n" +
+                "class LaboratoryApplicationTests {\n" +
+                "\n" +
+                "\t@Test\n" +
+                "\tvoid contextLoads() {\n" +
+                "\t}\n" +
+                "\n" +
+                "}\n";
+        sampleGen.generateTestMethods(1L, source);
     }
 
 }
