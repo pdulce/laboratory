@@ -74,14 +74,15 @@ public class SimpleClassGenerator implements IClassGenerator {
         testClass.append("public class ").append(className).append("Test {\n\n");
 
         // Obtener los métodos públicos
-        String regexMethod = "\b(public\\s+)?\\w+\\s+\\w+\\s*\\([^)]*\\)[\\s]*\\{(.*?)\\}";
+        String regexMethod = "\\b(public\\s+)?\\w+\\s+\\w+\\s*\\([^)]*\\)[\\s]*\\{(.*?)\\}";
         Pattern methodPattern = Pattern.compile(regexMethod, Pattern.DOTALL);
         Matcher methodMatcher = methodPattern.matcher(sourceCode);
         long idTask = id * 100;
         while (methodMatcher.find()) {
-            String contents = methodMatcher.group(0);
-            String returnType = methodMatcher.group(1);
-            String methodName = methodMatcher.group(2);
+            String contents = methodMatcher.groupCount() >= 1 ? methodMatcher.group(0) : "";
+            int hastaDeclaracionArgs = contents.indexOf("(");
+            String[] splitter = contents.substring(0, hastaDeclaracionArgs).split(" ");
+            String methodName = splitter[splitter.length - 1];
 
             StringBuilder methodBuilder = new StringBuilder();
             // Agregar método de prueba
@@ -99,7 +100,7 @@ public class SimpleClassGenerator implements IClassGenerator {
             newTask.setTestName("test_" + methodName);
             newTask.setOriginPathToTest(methodName);
             newTask.setContents(methodBuilder.toString());
-            newTask.setNumLines(contarLineas(methodMatcher.group(0)));
+            newTask.setNumLines(contarLineas(contents));
             childrenTasks.add(newTask);
         }
 
