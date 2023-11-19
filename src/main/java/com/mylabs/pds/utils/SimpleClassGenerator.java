@@ -15,19 +15,21 @@ public class SimpleClassGenerator implements IClassGenerator {
     public final List<Tarea> generateTestMethods(Long id, String sourceCode){
         List<Tarea> listOfTestMethods = new ArrayList<>();
         // Buscamos la clase de Test los métodos públicos
-        String regex = "@Test[\\s\\w\\n\\r]*(.*?)*?(.*?)\\}";
+        String regex = "@Test[\\n\\r]*(.*?)*?(.*?)\\}";
         Pattern methodPattern = Pattern.compile(regex, Pattern.DOTALL);
         Matcher methodMatcher = methodPattern.matcher(sourceCode);
         while (methodMatcher.find()) {
-            Tarea newTask = new Tarea();
-            newTask.setContents(methodMatcher.groupCount() >= 1 ? methodMatcher.group(0) : "");
-            newTask.setParentId(id);
-            newTask.setType("METHOD");
-            String methodDeclaration = methodMatcher.group().split("void ")[1];
-            int startArguments = methodDeclaration.indexOf("(");
-            newTask.setTestName(methodDeclaration.substring(0, startArguments).trim());
-            newTask.setNumLines(contarLineas(newTask.getContents()) - 1 /*no contabilizamos la anotación*/);
-            listOfTestMethods.add(newTask);
+            if (methodMatcher.groupCount() > 1 && methodMatcher.group().split("void ").length > 1) {
+                Tarea newTask = new Tarea();
+                newTask.setContents(methodMatcher.group(0));
+                newTask.setParentId(id);
+                newTask.setType("METHOD");
+                String methodDeclaration = methodMatcher.group().split("void ")[1];
+                int startArguments = methodDeclaration.indexOf("(");
+                newTask.setTestName(methodDeclaration.substring(0, startArguments).trim());
+                newTask.setNumLines(contarLineas(newTask.getContents()) - 1 /*no contabilizamos la anotación*/);
+                listOfTestMethods.add(newTask);
+            }
         }
         return listOfTestMethods;
     }

@@ -38,6 +38,15 @@ public class PdfUtil {
         document.open();
 
         PdfPTable table = new PdfPTable(5);
+
+        // cabecera
+        PdfPCell cell = new PdfPCell(new Phrase("Informe ejecutivo de cobertura en tests unitarios para los "
+                + "métodos público identificados en el elemento promocionable <<..>>" ));
+        cell.setFixedHeight(190);
+        cell.setBorder(Rectangle.NO_BORDER);
+        cell.setColspan(2);
+        table.addCell(cell);
+
         PdfPHeaderCell headerCell_1 = new PdfPHeaderCell();
         headerCell_1.setName("Package");
         PdfPCell cell_1 = new PdfPCell();

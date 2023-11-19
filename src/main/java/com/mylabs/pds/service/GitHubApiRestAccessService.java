@@ -83,7 +83,6 @@ public class GitHubApiRestAccessService {
                     entity));
         }
         byte[] bytesOfZipped = new ZipUtil().generarZipDesdeTareas(tareas);
-        //tareas = this.tareaRepository.saveAll(tareas);
         return tareas;
     }
     private Tarea scanDir(final Long idAssigned, final GitHubContent content, final String baseUriPattern,
@@ -157,6 +156,7 @@ public class GitHubApiRestAccessService {
         }
         Tarea tarea = new Tarea();
         tarea.setId(1L);
+        tarea.setChildren(testMetodos);
         return tarea;
     }
     private void scanTestDir(final Long idAssigned, final GitHubContent content, final String baseUriPattern,
@@ -192,7 +192,8 @@ public class GitHubApiRestAccessService {
     public Tarea getMethodsWithCoverage(final Tarea metodosRoot, final Tarea testMetodosRoot)
             throws DocumentException, IOException {
         // recorremos la lista de metodos; para cada uno, vemos si tiene o no aparición en el conjunto de test-methods
-        List<Tarea> metodos = metodosRoot.getChildren();
+        List<Tarea> metodos = new ArrayList<>();
+        filterOnlyMethods(metodosRoot, metodos);
         List<Tarea> testMetodos = testMetodosRoot.getChildren();
         metodos.forEach((metodo) -> {
             boolean esInvocadoAlMenosUnaVez = false;
@@ -222,5 +223,16 @@ public class GitHubApiRestAccessService {
         return tarea;
     }
 
+
+    private void filterOnlyMethods(final Tarea root, List<Tarea> filtered) {
+        if (root.getChildren() != null && !root.getChildren().isEmpty()) {
+            root.getChildren().forEach((tarea) -> {
+                if (tarea.getType().contentEquals("TESTMETHOD")) {
+                    filtered.add(tarea);
+                }
+                filterOnlyMethods(tarea, filtered);
+            });
+        }
+    }
 
 }
