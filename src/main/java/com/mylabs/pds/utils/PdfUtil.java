@@ -13,7 +13,9 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 
 public class PdfUtil {
@@ -181,7 +183,7 @@ public class PdfUtil {
 
         /**** chicha de las tareas ***/
         //PdfPTable table = new PdfPTable(5);
-        PdfPTable table = new PdfPTable(new float[] { 26, 24, 24, 12, 12 });
+        PdfPTable table = new PdfPTable(new float[] { 26, 24, 24, 11, 13 });
 
         table.setWidthPercentage(100);
         table.setPaddingTop(2);
@@ -206,37 +208,81 @@ public class PdfUtil {
         numLinesCell.getFont().setStyle(Font.FontFamily.HELVETICA.name());
         table.addCell(numLinesCell);
 
-        Paragraph coberturaCell = new Paragraph("Cobertura");
+        Paragraph coberturaCell = new Paragraph("¿Con test?");
         coberturaCell.getFont().setStyle(Font.BOLD);
         coberturaCell.getFont().setStyle(Font.FontFamily.HELVETICA.name());
         table.addCell(coberturaCell);
 
-        Font smallfont = new Font(Font.FontFamily.HELVETICA, 10);
+        Map<String, Integer> clasesToTest = new HashMap<>();
+        Map<String, Integer> packagesToTest = new HashMap<>();
+        long numTotalLineas = 0;
+        long numMethods = 0;
+        int cubiertos = 0;
+        Font smallfont = new Font(Font.FontFamily.HELVETICA, 8);
         // Llenar la tabla con datos de listaTareas
         for (Tarea tarea : metodos) {
+            numMethods++;
             Paragraph cell1 = new Paragraph(tarea.getPackageName());
             cell1.setFont(smallfont);
             table.addCell(cell1);
+            packagesToTest.merge(tarea.getPackageName(), 1, Integer::sum);
 
             Paragraph cell2 = new Paragraph(tarea.getClassName());
             cell2.setFont(smallfont);
             table.addCell(cell2);
+            clasesToTest.merge(tarea.getClassName(), 1, Integer::sum);
 
             Paragraph cell3 = new Paragraph(tarea.getMethodName());
             cell3.setFont(smallfont);
             table.addCell(cell3);
 
+            numTotalLineas += tarea.getNumLines();
             Paragraph cell4 = new Paragraph(tarea.getNumLines());
             cell4.setFont(smallfont);
             table.addCell(cell4);
-
+            if (tarea.getCoverage()) {
+                cubiertos++;
+            }
             Paragraph cell5 = new Paragraph(tarea.getCoverage() ? "Sí" : "No");
             cell5.setFont(smallfont);
             table.addCell(cell5);
 
         }
-
         document.add(table);
+
+        Double porcentaje = 100*Double.valueOf(cubiertos / metodos.size());
+
+        /** tabla de totalizadores **/
+        PdfPTable tabTotales = new PdfPTable(1);
+        tabTotales.setWidthPercentage(60);
+
+        PdfPCell cellBlank11 = new PdfPCell(new Phrase("                     "));
+        cellBlank11.setBorder(Rectangle.NO_BORDER);
+        PdfPCell cellBlank22 = new PdfPCell(new Phrase("                     "));
+        cellBlank22.setBorder(Rectangle.NO_BORDER);
+        tabTotales.addCell(cellBlank11);
+        tabTotales.addCell(cellBlank22);
+
+        PdfPCell cellTotales1 = new PdfPCell(new Phrase("Número de paquetes a testear:              "
+                + packagesToTest.keySet().size()));
+        PdfPCell cellTotales2 = new PdfPCell(new Phrase("Número de clases a testear:                 "
+                + clasesToTest.keySet().size()));
+        PdfPCell cellTotales3 = new PdfPCell(new Phrase("Número de métodos a testear:               "
+                + numMethods));
+        PdfPCell cellTotales4 = new PdfPCell(new Phrase("Número total de líneas a testear:           "
+                + numTotalLineas));
+        PdfPCell cellTotales5 = new PdfPCell(new Phrase("Porcentaje de cobertura en tests unitarios: "
+                + porcentaje + " %"));
+        cellTotales5.setBorder(Rectangle.BOX);
+        cellTotales5.setBackgroundColor(new BaseColor(255,255,45));
+
+        tabTotales.addCell(cellTotales1);
+        tabTotales.addCell(cellTotales2);
+        tabTotales.addCell(cellTotales3);
+        tabTotales.addCell(cellTotales4);
+        tabTotales.addCell(cellTotales5);
+        document.add(tabTotales);
+
         document.close();
 
         byte[] bytesOfStream = baos.toByteArray();
