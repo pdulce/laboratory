@@ -181,7 +181,7 @@ public class PdfUtil {
 
         /**** chicha de las tareas ***/
         //PdfPTable table = new PdfPTable(5);
-        PdfPTable table = new PdfPTable(new float[] { 25, 25, 25, 12, 13 });
+        PdfPTable table = new PdfPTable(new float[] { 26, 24, 24, 12, 12 });
 
         table.setWidthPercentage(100);
         table.setPaddingTop(2);
