@@ -1,5 +1,6 @@
 package com.mylabs.pds.controller;
 
+import com.itextpdf.text.DocumentException;
 import com.mylabs.pds.model.Tarea;
 import com.mylabs.pds.service.GitHubLibraryAccessService;
 import com.mylabs.pds.service.GitHubApiRestAccessService;
@@ -9,6 +10,7 @@ import com.mylabs.pds.utils.SimpleClassGenerator;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
+import java.io.IOException;
 import java.util.List;
 
 @RestController
@@ -46,7 +48,7 @@ public class GeneratorTestsController {
         return gitHubViaApiRest.scanRepository("pdulce", "laboratory", new GeneratorWithJavaAssist());
     }
 
-    /****** METODO PREFERIDO PARA NO DEPENDER DE LIBRERIAS DE TERCEROS COMO LÑA DE GITHUB ************/
+    /****** METODOS PREFERIDOS ************/
     @GetMapping("/scanGitRepoWithRegexAndAPIAccessGit")
     public final List<Tarea> scanGitRepoWithRegexAndAPIAccessGit() {
         return gitHubViaApiRest.scanRepository("pdulce", "laboratory", new SimpleClassGenerator());
@@ -61,5 +63,21 @@ public class GeneratorTestsController {
         return null;
     }
 
+    @PostMapping("/getReportWithSummary")
+    public final Tarea generateReportPDFOfCoverage(@RequestBody Tarea methodsAndTest) {
+        if (methodsAndTest != null && methodsAndTest.getChildren() != null
+                && !methodsAndTest.getChildren().isEmpty() && methodsAndTest.getChildren().size() == 2) {
+            Tarea methodsRoot = methodsAndTest.getChildren().get(0);
+            Tarea testRoot = methodsAndTest.getChildren().get(1);
+            try {
+                return gitHubViaApiRest.getMethodsWithCoverage(methodsRoot, testRoot);
+            } catch (DocumentException docExc) {
+                return null;
+            } catch (IOException ioExc) {
+                return null;
+            }
+        }
+        return null;
+    }
 
 }

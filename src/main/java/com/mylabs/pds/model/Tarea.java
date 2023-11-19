@@ -22,7 +22,7 @@ public class Tarea {
     private Boolean coverage;
     private String contents;
     private Long parentId;
-    private String originPathToTest;
+    private String sourceScanned;
     private String type; //TESTFOLDER, TESTCLASS, TESTMETHOD
     private List<Tarea> children;
 
@@ -90,12 +90,12 @@ public class Tarea {
         this.qName = qName;
     }
 
-    public String getOriginPathToTest() {
-        return originPathToTest;
+    public String getSourceScanned() {
+        return sourceScanned;
     }
 
-    public void setOriginPathToTest(String originPathToTest) {
-        this.originPathToTest = originPathToTest;
+    public void setSourceScanned(String sourceScanned) {
+        this.sourceScanned = sourceScanned;
     }
 
     public Long getId() {

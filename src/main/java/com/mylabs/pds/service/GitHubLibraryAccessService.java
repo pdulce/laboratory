@@ -72,7 +72,7 @@ public class GitHubLibraryAccessService {
                     tarea = this.classGenerator.generateTestClassForJavaFile(idAssigned, item.read());
                     if (tarea != null) {
                         tarea.setId(idAssigned);
-                        tarea.setOriginPathToTest(baseDir); //baseDir
+                        tarea.setSourceScanned(baseDir); //baseDir
                     }
                 } catch (IOException ioExc) {
                     ioExc.printStackTrace();
@@ -83,7 +83,7 @@ public class GitHubLibraryAccessService {
             // me creo y creo una lista de hijos que lleno con llamadas recursivas de cada uno
             tarea = new Tarea();
             tarea.setId(idAssigned);
-            tarea.setOriginPathToTest(baseDir); //baseDir
+            tarea.setSourceScanned(baseDir); //baseDir
             tarea.setType("FOLDER");
             tarea.setTestName(item.getName());
             tarea.setChildren(new ArrayList<>());

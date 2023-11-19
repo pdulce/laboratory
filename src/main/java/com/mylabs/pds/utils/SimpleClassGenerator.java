@@ -94,7 +94,7 @@ public class SimpleClassGenerator implements IClassGenerator {
             newTask.setParentId(id);
             newTask.setType("METHOD");
             newTask.setTestName("test_" + methodName);
-            newTask.setOriginPathToTest(methodName);
+            newTask.setSourceScanned(methodName);
             newTask.setContents(methodBuilder.toString());
             newTask.setNumLines(contarLineas(contents));
             childrenTasks.add(newTask);
@@ -111,7 +111,7 @@ public class SimpleClassGenerator implements IClassGenerator {
         tarea.setId(id);
         tarea.setType("CLASS");
         tarea.setTestName(className.concat("Test.java"));
-        tarea.setOriginPathToTest(packageName.concat(".").concat(className).concat(".java"));
+        tarea.setSourceScanned(packageName.concat(".").concat(className).concat(".java"));
         tarea.setContents(testClass.toString());
         tarea.setNumLines(counterLinesInClass);
         tarea.setChildren(childrenTasks);

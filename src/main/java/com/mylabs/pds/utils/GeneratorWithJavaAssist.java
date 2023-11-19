@@ -109,7 +109,7 @@ public class GeneratorWithJavaAssist implements IClassGenerator {
                     Tarea newTask = new Tarea();
                     newTask.setType("METHOD");
                     newTask.setTestName("test_" + method.getName());
-                    newTask.setOriginPathToTest(method.getName());
+                    newTask.setSourceScanned(method.getName());
                     newTask.setContents(testMethod.toString());
                     childrenTasks.add(newTask);
                 }
@@ -120,7 +120,7 @@ public class GeneratorWithJavaAssist implements IClassGenerator {
             Tarea tarea = new Tarea();
             tarea.setType("CLASS");
             tarea.setTestName(className.concat("Test.java"));
-            tarea.setOriginPathToTest(targetClass.getPackageName().concat(".").concat(targetClass.getSimpleName()));
+            tarea.setSourceScanned(targetClass.getPackageName().concat(".").concat(targetClass.getSimpleName()));
             tarea.setChildren(childrenTasks);
             tarea.setContents(testClass.toString());
             // Puedes imprimir el contenido de la clase de prueba o escribirlo en un archivo

@@ -1,5 +1,6 @@
 package com.mylabs.pds.service;
 
+import com.itextpdf.text.DocumentException;
 import com.mylabs.pds.model.Tarea;
 import com.mylabs.pds.repository.ConfiguracionRepository;
 import com.mylabs.pds.utils.GitHubContent;
@@ -16,6 +17,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -96,13 +98,13 @@ public class GitHubApiRestAccessService {
             //System.out.println("Contenido del archivo " + content.getName() + ":\n" + javaFileContent);
             tarea = this.classGenerator.generateTestClassForJavaFile(idAssigned, javaFileContent);
             if (tarea != null) {
-                tarea.setOriginPathToTest(initDirBase); //baseDir
+                tarea.setSourceScanned(initDirBase); //baseDir
             }
         } else {
             // me creo y creo una lista de hijos que lleno con llamadas recursivas de cada uno
             tarea = new Tarea();
             tarea.setId(idAssigned);
-            tarea.setOriginPathToTest(initDirBase + "/" + content.getName()); //baseDir
+            tarea.setSourceScanned(initDirBase + "/" + content.getName()); //baseDir
             tarea.setType("FOLDER");
             tarea.setTestName(content.getName());
             tarea.setChildren(new ArrayList<>());
@@ -129,6 +131,7 @@ public class GitHubApiRestAccessService {
         return tarea;
     }
 
+
     public final Tarea scanTestCobertura(final String owner, final String repositoryName, final List<Tarea> metodos,
                                       final IClassGenerator classGenerator) {
 
@@ -152,37 +155,8 @@ public class GitHubApiRestAccessService {
             scanTestDir(idInitial + (i++), contentItem, baseUriPattern, INIT_BASE_TEST_DIR,
                     BRANCH_NAME, entity, testMetodos);
         }
-
-        // recorremos la lista de metodos; para cada uno, vemos si tiene o no aparición en el conjunto de test-methods
-        metodos.forEach((metodo) -> {
-            boolean esInvocadoAlMenosUnaVez = false;
-            int j = 0;
-            while (!esInvocadoAlMenosUnaVez && j < testMetodos.size()) {
-                Tarea testMethod = testMetodos.get(j++);
-                String qName = metodo.getqName();
-                String[] splitterOfQName = qName.split("\\.");
-                String methodName = splitterOfQName[splitterOfQName.length - 1];
-                metodo.setMethodName(methodName);
-                String classOfMethod = splitterOfQName[splitterOfQName.length - 2];
-                metodo.setClassName(classOfMethod);
-
-                String packageOfMethod = qName.replaceAll("."+ classOfMethod + "." + methodName, "");
-                metodo.setPackageName(packageOfMethod);
-
-                if (testMethod.getContents().indexOf(packageOfMethod) != -1
-                        && testMethod.getContents().indexOf(classOfMethod) != -1
-                        && (testMethod.getContents().indexOf(methodName + " (") != -1
-                        || testMethod.getContents().indexOf(methodName + "(") != -1)) {
-                    esInvocadoAlMenosUnaVez = true;
-                }
-            }
-            metodo.setCoverage(esInvocadoAlMenosUnaVez);
-        });
-
-        byte[] javaMethodsCoverageReport = new PdfUtil().getJavaMethodsCoverageReport(metodos);
         Tarea tarea = new Tarea();
         tarea.setId(1L);
-        tarea.setArrayOfBytes(javaMethodsCoverageReport);
         return tarea;
     }
     private void scanTestDir(final Long idAssigned, final GitHubContent content, final String baseUriPattern,
@@ -213,6 +187,39 @@ public class GitHubApiRestAccessService {
                 }
             }
         }
+    }
+
+    public Tarea getMethodsWithCoverage(final Tarea metodosRoot, final Tarea testMetodosRoot)
+            throws DocumentException, IOException {
+        // recorremos la lista de metodos; para cada uno, vemos si tiene o no aparición en el conjunto de test-methods
+        List<Tarea> metodos = metodosRoot.getChildren();
+        List<Tarea> testMetodos = testMetodosRoot.getChildren();
+        metodos.forEach((metodo) -> {
+            boolean esInvocadoAlMenosUnaVez = false;
+            int j = 0;
+            while (!esInvocadoAlMenosUnaVez && j < testMetodos.size()) {
+                Tarea testMethod = testMetodos.get(j++);
+                String qName = metodo.getqName();
+                String[] splitterOfQName = qName.split("\\.");
+                String methodName = splitterOfQName[splitterOfQName.length - 1];
+                metodo.setMethodName(methodName);
+                String classOfMethod = splitterOfQName[splitterOfQName.length - 2];
+                metodo.setClassName(classOfMethod);
+                String packageOfMethod = qName.replaceAll("."+ classOfMethod + "." + methodName, "");
+                metodo.setPackageName(packageOfMethod);
+                if (testMethod.getContents().indexOf(packageOfMethod) != -1
+                        && testMethod.getContents().indexOf(classOfMethod) != -1
+                        && (testMethod.getContents().indexOf(methodName + " (") != -1
+                        || testMethod.getContents().indexOf(methodName + "(") != -1)) {
+                    esInvocadoAlMenosUnaVez = true;
+                }
+            }
+            metodo.setCoverage(esInvocadoAlMenosUnaVez);
+        });
+        Tarea tarea = new Tarea();
+        tarea.setId(1L);
+        tarea.setArrayOfBytes(new PdfUtil().getJavaMethodsCoverageReport(metodos));
+        return tarea;
     }
 
 

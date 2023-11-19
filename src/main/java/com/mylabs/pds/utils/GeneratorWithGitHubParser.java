@@ -106,7 +106,7 @@ public class GeneratorWithGitHubParser implements IClassGenerator {
                         newTask.setParentId(id);
                         newTask.setType("METHOD");
                         newTask.setTestName("test_" + method.getNameAsString());
-                        newTask.setOriginPathToTest(method.getNameAsString());
+                        newTask.setSourceScanned(method.getNameAsString());
                         newTask.setContents(methodDeclaration.toString());
                         childrenTasks.add(newTask);
                     }
@@ -120,7 +120,7 @@ public class GeneratorWithGitHubParser implements IClassGenerator {
                 tarea.setId(id);
                 tarea.setType("CLASS");
                 tarea.setTestName(className.concat("Test.java"));
-                tarea.setOriginPathToTest(testClass.getPackageDeclaration().get().getNameAsString().
+                tarea.setSourceScanned(testClass.getPackageDeclaration().get().getNameAsString().
                         concat(".").concat(className).concat(".java"));
                 tarea.setContents(testClass.toString());
                 tarea.setChildren(childrenTasks);
