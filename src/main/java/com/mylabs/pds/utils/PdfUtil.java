@@ -1,15 +1,23 @@
 package com.mylabs.pds.utils;
 
-import com.itextpdf.text.*;
+import com.itextpdf.text.BaseColor;
+import com.itextpdf.text.Document;
+import com.itextpdf.text.DocumentException;
+import com.itextpdf.text.Element;
 import com.itextpdf.text.Font;
-import com.itextpdf.text.Image;
+import com.itextpdf.text.PageSize;
+import com.itextpdf.text.Paragraph;
+import com.itextpdf.text.Phrase;
 import com.itextpdf.text.Rectangle;
-import com.itextpdf.text.pdf.*;
+import com.itextpdf.text.pdf.ColumnText;
+import com.itextpdf.text.pdf.PdfContentByte;
+import com.itextpdf.text.pdf.PdfLayer;
+import com.itextpdf.text.pdf.PdfPCell;
+import com.itextpdf.text.pdf.PdfPTable;
+import com.itextpdf.text.pdf.PdfWriter;
 import com.mylabs.pds.model.Tarea;
 
-import java.awt.*;
 import java.io.ByteArrayOutputStream;
-import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -22,14 +30,6 @@ public class PdfUtil {
 
     public static void main(String[] args) throws IOException, DocumentException {
         new PdfUtil().getJavaMethodsCoverageReport(new ArrayList<>());
-        /*File file22 = new File("C:\\Temp\\pdfSample22.pdf");
-        new PdfUtil().createPdf22("C:\\Temp\\pdfSample22.pdf");
-
-        File file33 = new File("C:\\Temp\\pdfSample33.pdf");
-        new PdfUtil().createPdf33("C:\\Temp\\pdfSample33.pdf");*
-
-        File file33 = new File("C:\\Temp\\pdfSampleWithLayers.pdf");
-        new PdfUtil().createPdf("C:\\Temp\\pdfSampleWithLayers.pdf");*/
     }
 
     /** The resulting PDF. */
@@ -149,7 +149,7 @@ public class PdfUtil {
     public byte[] getJavaMethodsCoverageReport(final List<Tarea> metodos) throws IOException, DocumentException {
 
         Document document = new Document();
-        document.setPageSize(PageSize.A4);
+        document.setPageSize(PageSize.A4.rotate());
         // step 2
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         PdfWriter writer = PdfWriter.getInstance(document, baos);
@@ -164,9 +164,9 @@ public class PdfUtil {
         PdfPCell cellOne = new PdfPCell(
                 new Phrase("Informe ejecutivo de cobertura en tests unitarios", headerFont));
         cellOne.setBorder(Rectangle.NO_BORDER);
-        PdfPCell cellBlank1 = new PdfPCell(new Phrase("                                              "));
+        PdfPCell cellBlank1 = new PdfPCell(new Phrase("             "));
         cellBlank1.setBorder(Rectangle.NO_BORDER);
-        PdfPCell cellBlank2 = new PdfPCell(new Phrase("                                              "));
+        PdfPCell cellBlank2 = new PdfPCell(new Phrase("             "));
         cellBlank2.setBorder(Rectangle.NO_BORDER);
         tabHead1.addCell(cellOne);
         tabHead1.addCell(cellBlank1);
@@ -174,41 +174,41 @@ public class PdfUtil {
         document.add(tabHead1);
 
         PdfPTable tabHead2 = new PdfPTable(1);
-        tabHead2.setWidthPercentage(50);
-        PdfPCell cellTwo = new PdfPCell(new Phrase("Elemento promocionable MACAMAC0"));
+        tabHead2.setWidthPercentage(40);
+        PdfPCell cellTwo = new PdfPCell(new Phrase("               Elemento promocionable MACAMAC0"));
         cellTwo.setBorder(Rectangle.BOX);
-        //cellOne.setBackgroundColor(new BaseColor(255,255,45));
         tabHead2.addCell(cellTwo);
         document.add(tabHead2);
 
         /**** chicha de las tareas ***/
         //PdfPTable table = new PdfPTable(5);
-        PdfPTable table = new PdfPTable(new float[] { 26, 24, 24, 11, 13 });
+        PdfPTable table = new PdfPTable(new float[] { 24, 22, 32, 8, 10 });
 
         table.setWidthPercentage(100);
         table.setPaddingTop(2);
         // HEADER
-        Paragraph packageCell = new Paragraph("Package");
+        Paragraph packageCell = new Paragraph("                    Package");
+
         packageCell.getFont().setStyle(Font.BOLD);
         packageCell.getFont().setStyle(Font.FontFamily.HELVETICA.name());
         table.addCell(packageCell);
 
-        Paragraph claseCell = new Paragraph("Clase");
+        Paragraph claseCell = new Paragraph("                    Clase");
         claseCell.getFont().setStyle(Font.BOLD);
         claseCell.getFont().setStyle(Font.FontFamily.HELVETICA.name());
         table.addCell(claseCell);
 
-        Paragraph metodoCell = new Paragraph("Método");
+        Paragraph metodoCell = new Paragraph("                                Método");
         metodoCell.getFont().setStyle(Font.BOLD);
         metodoCell.getFont().setStyle(Font.FontFamily.HELVETICA.name());
         table.addCell(metodoCell);
 
-        Paragraph numLinesCell = new Paragraph("Nº líneas");
+        Paragraph numLinesCell = new Paragraph("  Nº líneas");
         numLinesCell.getFont().setStyle(Font.BOLD);
         numLinesCell.getFont().setStyle(Font.FontFamily.HELVETICA.name());
         table.addCell(numLinesCell);
 
-        Paragraph coberturaCell = new Paragraph("¿Con test?");
+        Paragraph coberturaCell = new Paragraph("  ¿Con test?");
         coberturaCell.getFont().setStyle(Font.BOLD);
         coberturaCell.getFont().setStyle(Font.FontFamily.HELVETICA.name());
         table.addCell(coberturaCell);
@@ -217,44 +217,56 @@ public class PdfUtil {
         Map<String, Integer> packagesToTest = new HashMap<>();
         long numTotalLineas = 0;
         long numMethods = 0;
-        int cubiertos = 0;
-        Font smallfont = new Font(Font.FontFamily.HELVETICA, 8);
+        int numCoverage = 0;
+        Font smallfont = new Font(Font.FontFamily.HELVETICA, 10);
         // Llenar la tabla con datos de listaTareas
         for (Tarea tarea : metodos) {
             numMethods++;
             Paragraph cell1 = new Paragraph(tarea.getPackageName());
             cell1.setFont(smallfont);
-            table.addCell(cell1);
+            PdfPCell cell11 = new PdfPCell();
+            cell11.addElement(cell1);
+            table.addCell(cell11);
             packagesToTest.merge(tarea.getPackageName(), 1, Integer::sum);
 
             Paragraph cell2 = new Paragraph(tarea.getClassName());
             cell2.setFont(smallfont);
-            table.addCell(cell2);
+            PdfPCell cell22 = new PdfPCell();
+            cell22.addElement(cell2);
+            table.addCell(cell22);
             clasesToTest.merge(tarea.getClassName(), 1, Integer::sum);
 
             Paragraph cell3 = new Paragraph(tarea.getMethodName());
             cell3.setFont(smallfont);
-            table.addCell(cell3);
+            PdfPCell cell33 = new PdfPCell();
+            cell33.addElement(cell3);
+            table.addCell(cell33);
 
             numTotalLineas += tarea.getNumLines();
-            Paragraph cell4 = new Paragraph(tarea.getNumLines());
+            Paragraph cell4 = new Paragraph("        " + tarea.getNumLines());
             cell4.setFont(smallfont);
-            table.addCell(cell4);
+            PdfPCell cell44 = new PdfPCell();
+            cell44.setVerticalAlignment(Element.ALIGN_MIDDLE);
+            cell44.addElement(cell4);
+            table.addCell(cell44);
             if (tarea.getCoverage()) {
-                cubiertos++;
+                numCoverage++;
             }
-            Paragraph cell5 = new Paragraph(tarea.getCoverage() ? "Sí" : "No");
+            Paragraph cell5 = new Paragraph(tarea.getCoverage() ? "            Sí" : "            No");
             cell5.setFont(smallfont);
-            table.addCell(cell5);
+            PdfPCell cell55 = new PdfPCell();
+            cell55.setVerticalAlignment(Element.ALIGN_MIDDLE);
+            cell55.addElement(cell5);
+            table.addCell(cell55);
 
         }
         document.add(table);
 
-        Double porcentaje = 100*Double.valueOf(cubiertos / metodos.size());
+        Double porcentaje = 100*Double.valueOf(numCoverage / metodos.size());
 
         /** tabla de totalizadores **/
         PdfPTable tabTotales = new PdfPTable(1);
-        tabTotales.setWidthPercentage(60);
+        tabTotales.setWidthPercentage(45);
 
         PdfPCell cellBlank11 = new PdfPCell(new Phrase("                     "));
         cellBlank11.setBorder(Rectangle.NO_BORDER);
@@ -263,24 +275,27 @@ public class PdfUtil {
         tabTotales.addCell(cellBlank11);
         tabTotales.addCell(cellBlank22);
 
-        PdfPCell cellTotales1 = new PdfPCell(new Phrase("Número de paquetes a testear:              "
+        PdfPCell cellTotales1 = new PdfPCell(new Phrase("Núm. de paquetes a testear:      "
                 + packagesToTest.keySet().size()));
-        PdfPCell cellTotales2 = new PdfPCell(new Phrase("Número de clases a testear:                 "
-                + clasesToTest.keySet().size()));
-        PdfPCell cellTotales3 = new PdfPCell(new Phrase("Número de métodos a testear:               "
-                + numMethods));
-        PdfPCell cellTotales4 = new PdfPCell(new Phrase("Número total de líneas a testear:           "
+        PdfPCell cellTotales2 = new PdfPCell(new Phrase("Núm. total de líneas a testear:  "
                 + numTotalLineas));
-        PdfPCell cellTotales5 = new PdfPCell(new Phrase("Porcentaje de cobertura en tests unitarios: "
+        PdfPCell cellTotales3 = new PdfPCell(new Phrase("Núm. de clases a testear:         "
+                + clasesToTest.keySet().size()));
+        PdfPCell cellTotales4 = new PdfPCell(new Phrase("Núm. de métodos a testear:       "
+                + numMethods));
+        PdfPCell cellTotales5 = new PdfPCell(new Phrase("Núm. de métodos con cobertura de unitarias:             "
+                + numCoverage));
+        PdfPCell cellTotales6 = new PdfPCell(new Phrase("Porcentaje de métodos con cobertura de unitarias:    "
                 + porcentaje + " %"));
-        cellTotales5.setBorder(Rectangle.BOX);
-        cellTotales5.setBackgroundColor(new BaseColor(255,255,45));
+        cellTotales6.setBorder(Rectangle.BOX);
+        cellTotales6.setBackgroundColor(new BaseColor(255,255,45));
 
         tabTotales.addCell(cellTotales1);
         tabTotales.addCell(cellTotales2);
         tabTotales.addCell(cellTotales3);
         tabTotales.addCell(cellTotales4);
         tabTotales.addCell(cellTotales5);
+        tabTotales.addCell(cellTotales6);
         document.add(tabTotales);
 
         document.close();
@@ -298,57 +313,5 @@ public class PdfUtil {
         return bytesOfStream;
     }
 
-    public void createPdf22(String dest) throws IOException, DocumentException {
-        Document document = new Document();
-        PdfWriter.getInstance(document, new FileOutputStream(dest));
-        document.open();
 
-        PdfPTable table = new PdfPTable(8);
-        for(int aw = 0; aw < 16; aw++){
-            table.addCell("hi");
-        }
-        document.add(table);
-        document.close();
-    }
-
-    public void createPdf33(String dest) throws IOException, DocumentException {
-        Rectangle small = new Rectangle(290,100);
-        Font smallfont = new Font(Font.FontFamily.HELVETICA, 10);
-        Document document = new Document(small, 5, 5, 5, 5);
-        PdfWriter writer = PdfWriter.getInstance(document, new FileOutputStream(dest));
-        document.open();
-
-        PdfPTable table = new PdfPTable(2);
-        table.setTotalWidth(new float[]{ 160, 120 });
-        table.setLockedWidth(true);
-        PdfContentByte cb = writer.getDirectContent();
-        // first row
-        PdfPCell cell = new PdfPCell(new Phrase("Some text here"));
-        cell.setFixedHeight(30);
-        cell.setBorder(Rectangle.NO_BORDER);
-        cell.setColspan(2);
-        table.addCell(cell);
-        // second row
-        cell = new PdfPCell(new Phrase("Some more text", smallfont));
-        cell.setFixedHeight(30);
-        cell.setVerticalAlignment(Element.ALIGN_MIDDLE);
-        cell.setBorder(Rectangle.NO_BORDER);
-        table.addCell(cell);
-        Barcode128 code128 = new Barcode128();
-        code128.setCode("14785236987541");
-        code128.setCodeType(Barcode128.CODE128);
-        Image code128Image = code128.createImageWithBarcode(cb, null, null);
-        cell = new PdfPCell(code128Image, true);
-        cell.setBorder(Rectangle.NO_BORDER);
-        cell.setFixedHeight(30);
-        table.addCell(cell);
-        // third row
-        table.addCell(cell);
-        cell = new PdfPCell(new Phrase("and something else here", smallfont));
-        cell.setBorder(Rectangle.NO_BORDER);
-        cell.setHorizontalAlignment(Element.ALIGN_RIGHT);
-        table.addCell(cell);
-        document.add(table);
-        document.close();
-    }
 }
