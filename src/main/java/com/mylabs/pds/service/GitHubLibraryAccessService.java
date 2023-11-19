@@ -27,14 +27,16 @@ public class GitHubLibraryAccessService {
     private String owner;
     private String repositoryName;
 
-    public final List<Tarea> scanRepository(final String owner, final String repositoryName,
+    public final Tarea scanRepository(final String owner, final String repositoryName,
                                       final IClassGenerator classGenerator) {
         this.classGenerator = classGenerator;
         this.repositoryName = repositoryName;
         this.owner = owner;
         String token = this.configRepository.findById(1L).isPresent()
                 ? this.configRepository.findById(1L).get().getCodigo() : "unknown";
-        List<Tarea> tareas = new ArrayList<>();
+        Tarea root = new Tarea();
+        root.setType("FOLDER");
+        root.setChildren(new ArrayList<>());
         try {
             GitHub github = GitHub.connectUsingOAuth(token);
             GHRepository repository = github.getUser(this.owner).getRepository(this.repositoryName);
@@ -52,14 +54,14 @@ public class GitHubLibraryAccessService {
             Long idInitial = 1L;
             int i = 0;
             for (GHContent ghContent : ghDirContent) {
-                tareas.add(scanRecursiveDirectory(idInitial + (i++),
+                root.getChildren().add(scanRecursiveDirectory(idInitial + (i++),
                         INIT_BASE_DIR.concat("/").concat(ghContent.getName()), repository, ghContent));
             }
-            byte[] bytesOfZipped = new ZipUtil().generarZipDesdeTareas(tareas);
+            byte[] bytesOfZipped = new ZipUtil().generarZipDesdeTareas(List.of(root));
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
-        return tareas;
+        return root;
     }
 
     private Tarea scanRecursiveDirectory(final Long idAssigned, final String baseDir, final GHRepository repository, final GHContent item) {

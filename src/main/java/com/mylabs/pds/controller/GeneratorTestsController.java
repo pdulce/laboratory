@@ -23,34 +23,34 @@ public class GeneratorTestsController {
     private GitHubLibraryAccessService gitHubService;
 
     @GetMapping("/scanGitRepoWithHubParserAndAccessViaLibraryHub")
-    public final List<Tarea> scanGitRepoWithHubParserAndAccessViaLibraryHub() {
+    public final Tarea scanGitRepoWithHubParserAndAccessViaLibraryHub() {
         return gitHubService.scanRepository("pdulce", "laboratory", new GeneratorWithGitHubParser());
     }
 
     @GetMapping("/scanGitRepoWithJavaAssistAndAccessViaLibraryHub")
-    public final List<Tarea> scanGitRepoWithJavaAssistAndAccessViaLibraryHub() {
+    public final Tarea scanGitRepoWithJavaAssistAndAccessViaLibraryHub() {
         return gitHubService.scanRepository("pdulce", "laboratory", new GeneratorWithJavaAssist());
     }
 
     @GetMapping("/scanGitRepoWithRegexAndAccessViaLibraryHub")
-    public final List<Tarea> scanGitRepoWithRegexAndAccessViaLibraryHub() {
+    public final Tarea scanGitRepoWithRegexAndAccessViaLibraryHub() {
         return gitHubService.scanRepository("pdulce", "laboratory", new SimpleClassGenerator());
     }
 
     /****** METODOS PREFERIDOS PORQUE ATACAN VIA API-REST CON EL TOKEN DE GITLAB ****************/
     @GetMapping("/scanGitRepoWithHubParserAndAPIAccessGit")
-    public final List<Tarea> scanGitRepoWithHubParserAndAPIAccessGit() {
+    public final Tarea scanGitRepoWithHubParserAndAPIAccessGit() {
         return gitHubViaApiRest.scanRepository("pdulce", "laboratory", new GeneratorWithGitHubParser());
     }
 
     @GetMapping("/scanGitRepoWithJavaAssistAndAPIAccessGit")
-    public final List<Tarea> scanGitRepoWithJavaAssistAndAPIAccessGit() {
+    public final Tarea scanGitRepoWithJavaAssistAndAPIAccessGit() {
         return gitHubViaApiRest.scanRepository("pdulce", "laboratory", new GeneratorWithJavaAssist());
     }
 
     /****** METODOS PREFERIDOS ************/
     @GetMapping("/scanGitRepoWithRegexAndAPIAccessGit")
-    public final List<Tarea> scanGitRepoWithRegexAndAPIAccessGit() {
+    public final Tarea scanGitRepoWithRegexAndAPIAccessGit() {
         return gitHubViaApiRest.scanRepository("pdulce", "laboratory", new SimpleClassGenerator());
     }
 

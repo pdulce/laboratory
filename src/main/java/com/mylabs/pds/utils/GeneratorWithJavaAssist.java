@@ -25,7 +25,7 @@ import java.util.List;
 public class GeneratorWithJavaAssist implements IClassGenerator {
 
     @Override
-    public final List<Tarea> generateTestMethods(Long id, String sourceCode){
+    public final Tarea generateTestMethods(Long id, String sourceCode){
         throw new NotImplementedException("not impleted yet");
     }
 

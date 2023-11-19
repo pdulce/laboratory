@@ -12,8 +12,9 @@ import java.util.regex.Pattern;
 public class SimpleClassGenerator implements IClassGenerator {
 
     @Override
-    public final List<Tarea> generateTestMethods(Long id, String sourceCode){
-        List<Tarea> listOfTestMethods = new ArrayList<>();
+    public final Tarea generateTestMethods(Long id, String sourceCode){
+        Tarea root = new Tarea();
+        root.setChildren(new ArrayList<>());
         // Buscamos la clase de Test los métodos públicos
         String regex = "@Test[\\n\\r]*(.*?)*?(.*?)\\}";
         Pattern methodPattern = Pattern.compile(regex, Pattern.DOTALL);
@@ -28,10 +29,10 @@ public class SimpleClassGenerator implements IClassGenerator {
                 int startArguments = methodDeclaration.indexOf("(");
                 newTask.setTestName(methodDeclaration.substring(0, startArguments).trim());
                 newTask.setNumLines(contarLineas(newTask.getContents()) - 1 /*no contabilizamos la anotación*/);
-                listOfTestMethods.add(newTask);
+                root.getChildren().add(newTask);
             }
         }
-        return listOfTestMethods;
+        return root;
     }
 
     private static int contarLineas(String texto) {
@@ -96,6 +97,10 @@ public class SimpleClassGenerator implements IClassGenerator {
             newTask.setParentId(id);
             newTask.setType("METHOD");
             newTask.setTestName("test_" + methodName);
+            newTask.setClassName(className);
+            newTask.setMethodName(methodName);
+            newTask.setPackageName(packageName);
+            newTask.setqName(packageName + "." + className + "." + methodName);
             newTask.setSourceScanned(methodName);
             newTask.setContents(methodBuilder.toString());
             newTask.setNumLines(contarLineas(contents));
@@ -113,6 +118,9 @@ public class SimpleClassGenerator implements IClassGenerator {
         tarea.setId(id);
         tarea.setType("CLASS");
         tarea.setTestName(className.concat("Test.java"));
+        tarea.setClassName(className);
+        tarea.setPackageName(packageName);
+        tarea.setqName(packageName + "." + className);
         tarea.setSourceScanned(packageName.concat(".").concat(className).concat(".java"));
         tarea.setContents(testClass.toString());
         tarea.setNumLines(counterLinesInClass);
@@ -126,46 +134,5 @@ public class SimpleClassGenerator implements IClassGenerator {
         throw new NotImplementedException("not implemented yet");
     }
 
-    public static void main(String[] args) {
-        SimpleClassGenerator sampleGen = new SimpleClassGenerator();
-        String source = "package com.mylabs.pds;\n" +
-                "\n" +
-                "import org.junit.jupiter.api.Test;\n" +
-                "import org.springframework.boot.test.context.SpringBootTest;\n" +
-                "\n" +
-                "@SpringBootTest\n" +
-                "class LaboratoryApplicationTests {\n" +
-                "\n" +
-                "\t@Test\n" +
-                "\tvoid contextLoads() {\n" +
-                "\t}\n" +
-                "\n" +
-                "}\n";
-        System.out.println("sampleGen.generateTestMethods(1L, source).size(): "
-                + sampleGen.generateTestMethods(1L, source).size());
-
-
-        source = "package com.mylabs.pds.utils;\n" +
-                "\n" +
-                "import com.mylabs.pds.model.Tarea;\n" +
-                "\n" +
-                "import java.util.List;\n" +
-                "\n" +
-                "public class PdfUtil {\n" +
-                "\n" +
-                "    public final byte[] getJavaMethodsCoverageReport(final List<Tarea> metodos) {\n" +
-                "        System.out.println(\"generando report en df de la cobertura de métodos java por invocación desde test-prj...\");\n" +
-                "        System.out.println(\"...report en df generado con éxito.\");\n" +
-                "\n" +
-                "        //debería pintar una tabla con pocos campos\n" +
-                "\n" +
-                "        return null;\n" +
-                "\n" +
-                "    }\n" +
-                "\n" +
-                "}\n";
-        System.out.println("sampleGen.generateTestClassForJavaFile(1L, source).contents:::: \n\n"
-                + sampleGen.generateTestClassForJavaFile(1L, source).getContents());
-    }
 
 }

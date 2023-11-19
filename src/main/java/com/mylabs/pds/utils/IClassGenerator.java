@@ -11,5 +11,5 @@ public interface IClassGenerator {
 
     public Tarea generateTestClassForJavaFile(Long id, InputStream inputStream);
 
-    public List<Tarea> generateTestMethods(Long id, String sourceCode);
+    public Tarea generateTestMethods(Long id, String sourceCode);
 }

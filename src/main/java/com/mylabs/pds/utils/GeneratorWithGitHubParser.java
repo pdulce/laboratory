@@ -27,7 +27,7 @@ import java.util.concurrent.atomic.AtomicLong;
 public class GeneratorWithGitHubParser implements IClassGenerator {
 
     @Override
-    public List<Tarea> generateTestMethods(Long id, String sourceCode){
+    public Tarea generateTestMethods(Long id, String sourceCode){
         throw new NotImplementedException("not impleted yet");
     }
 

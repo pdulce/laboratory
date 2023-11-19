@@ -54,7 +54,7 @@ public class GitHubApiRestAccessService {
         headers.set("Authorization", "token " + token);
         return String.format(baseUriPattern, this.owner, this.repositoryName, INIT_BASE_DIR , BRANCH_NAME);
     }
-    public final List<Tarea> scanRepository(final String owner, final String repositoryName,
+    public final Tarea scanRepository(final String owner, final String repositoryName,
                                       final IClassGenerator classGenerator) {
 
         this.classGenerator = classGenerator;
@@ -74,16 +74,18 @@ public class GitHubApiRestAccessService {
         ResponseEntity<GitHubContent[]> responseInner = restTemplate.exchange(newGitApiUrl, HttpMethod.GET, entity,
                 GitHubContent[].class);
         GitHubContent[] contentsInner = responseInner.getBody();
-        List<Tarea> tareas = new ArrayList<>();
+        Tarea root = new Tarea();
+        root.setType("FOLDER");
+        root.setChildren(new ArrayList<>());
         Long idInitial = 1L;
         int i = 0;
         for (GitHubContent contentItem : contentsInner) {
             // llamada recursiva para descubrir los fuentes java
-            tareas.add(scanDir(idInitial + (i++), contentItem, baseUriPattern, INIT_BASE_DIR, BRANCH_NAME,
-                    entity));
+            root.getChildren().add(scanDir(idInitial + (i++), contentItem, baseUriPattern,
+                    INIT_BASE_DIR, BRANCH_NAME, entity));
         }
-        byte[] bytesOfZipped = new ZipUtil().generarZipDesdeTareas(tareas);
-        return tareas;
+        root.setArrayOfBytes(new ZipUtil().generarZipDesdeTareas(List.of(root)));
+        return root;
     }
     private Tarea scanDir(final Long idAssigned, final GitHubContent content, final String baseUriPattern,
                           final String initDirBase, final String branch, final HttpEntity<String> entity) {
@@ -156,6 +158,7 @@ public class GitHubApiRestAccessService {
         }
         Tarea tarea = new Tarea();
         tarea.setId(1L);
+        tarea.setType("FOLDER");
         tarea.setChildren(testMetodos);
         return tarea;
     }
@@ -168,9 +171,9 @@ public class GitHubApiRestAccessService {
             ResponseEntity<String> fileResponse = restTemplate.exchange(fileContentUrl,
                     HttpMethod.GET, entity, String.class);
             String javaFileContent = fileResponse.getBody();
-            List<Tarea> tareasTestMethods = this.classGenerator.generateTestMethods(idAssigned, javaFileContent);
-            if (tareasTestMethods != null && !tareasTestMethods.isEmpty()) {
-                tareasAcumuladas.addAll(tareasTestMethods);
+            Tarea tareasTestMethods = this.classGenerator.generateTestMethods(idAssigned, javaFileContent);
+            if (tareasTestMethods != null) {
+                tareasAcumuladas.addAll(tareasTestMethods.getChildren());
             }
         } else {
             // hago llamada recursiva hasta que encuentre una clase .java
@@ -194,12 +197,15 @@ public class GitHubApiRestAccessService {
         // recorremos la lista de metodos; para cada uno, vemos si tiene o no aparición en el conjunto de test-methods
         List<Tarea> metodos = new ArrayList<>();
         filterOnlyMethods(metodosRoot, metodos);
-        List<Tarea> testMetodos = testMetodosRoot.getChildren();
+
+        List<Tarea> tests = new ArrayList<>();
+        filterOnlyMethods(testMetodosRoot, tests);
+
         metodos.forEach((metodo) -> {
             boolean esInvocadoAlMenosUnaVez = false;
             int j = 0;
-            while (!esInvocadoAlMenosUnaVez && j < testMetodos.size()) {
-                Tarea testMethod = testMetodos.get(j++);
+            while (!esInvocadoAlMenosUnaVez && j < tests.size()) {
+                Tarea testMethod = tests.get(j++);
                 String qName = metodo.getqName();
                 String[] splitterOfQName = qName.split("\\.");
                 String methodName = splitterOfQName[splitterOfQName.length - 1];
@@ -218,19 +224,21 @@ public class GitHubApiRestAccessService {
             metodo.setCoverage(esInvocadoAlMenosUnaVez);
         });
         Tarea tarea = new Tarea();
+        tarea.setType("FOLDER");
         tarea.setId(1L);
         tarea.setArrayOfBytes(new PdfUtil().getJavaMethodsCoverageReport(metodos));
         return tarea;
     }
 
 
-    private void filterOnlyMethods(final Tarea root, List<Tarea> filtered) {
+    private void filterOnlyMethods(final Tarea root, final List<Tarea> filtered) {
         if (root.getChildren() != null && !root.getChildren().isEmpty()) {
             root.getChildren().forEach((tarea) -> {
-                if (tarea.getType().contentEquals("TESTMETHOD")) {
+                if (tarea.getType().contentEquals("METHOD")) {
                     filtered.add(tarea);
+                } else {
+                    filterOnlyMethods(tarea, filtered);
                 }
-                filterOnlyMethods(tarea, filtered);
             });
         }
     }

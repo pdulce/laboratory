@@ -23,7 +23,7 @@ public class Tarea {
     private String contents;
     private Long parentId;
     private String sourceScanned;
-    private String type; //TESTFOLDER, TESTCLASS, TESTMETHOD
+    private String type; //FOLDER, CLASS, METHOD
     private List<Tarea> children;
 
     public byte[] getArrayOfBytes() {
