@@ -1,15 +1,13 @@
 package com.mylabs.pds.utils;
 
-import com.itextpdf.text.Document;
-import com.itextpdf.text.DocumentException;
-import com.itextpdf.text.Element;
+import com.itextpdf.text.*;
 import com.itextpdf.text.Font;
 import com.itextpdf.text.Image;
-import com.itextpdf.text.Phrase;
 import com.itextpdf.text.Rectangle;
 import com.itextpdf.text.pdf.*;
 import com.mylabs.pds.model.Tarea;
 
+import java.awt.*;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
@@ -21,70 +19,221 @@ import java.util.List;
 public class PdfUtil {
 
     public static void main(String[] args) throws IOException, DocumentException {
-
-        File file22 = new File("C:\\Temp\\pdfSample22.pdf");
+        new PdfUtil().getJavaMethodsCoverageReport(new ArrayList<>());
+        /*File file22 = new File("C:\\Temp\\pdfSample22.pdf");
         new PdfUtil().createPdf22("C:\\Temp\\pdfSample22.pdf");
 
         File file33 = new File("C:\\Temp\\pdfSample33.pdf");
-        new PdfUtil().createPdf33("C:\\Temp\\pdfSample33.pdf");
+        new PdfUtil().createPdf33("C:\\Temp\\pdfSample33.pdf");*
+
+        File file33 = new File("C:\\Temp\\pdfSampleWithLayers.pdf");
+        new PdfUtil().createPdf("C:\\Temp\\pdfSampleWithLayers.pdf");*/
+    }
+
+    /** The resulting PDF. */
+
+    /**
+     * Creates a PDF document.
+     * @param filename the path to the new PDF document
+     * @throws DocumentException
+     * @throws IOException
+     */
+    public void createPdf(String filename)
+            throws DocumentException, IOException {
+        // step 1
+        Document document = new Document();
+        document.setPageSize(PageSize.A4);//.rotate());
+        // step 2
+        PdfWriter writer =
+                PdfWriter.getInstance(document, new FileOutputStream(filename));
+        writer.setPdfVersion(PdfWriter.VERSION_1_5);
+        // step 3
+        document.open();
+        // step 4
+        PdfContentByte cb = writer.getDirectContent();
+        PdfLayer nested = new PdfLayer("Nested layers", writer);
+        PdfLayer nested_1 = new PdfLayer("Nested layer 1", writer);
+        PdfLayer nested_2 = new PdfLayer("Nested layer 2", writer);
+        nested.addChild(nested_1);
+        nested.addChild(nested_2);
+        writer.lockLayer(nested_2);
+        cb.beginLayer(nested);
+        ColumnText.showTextAligned(cb, Element.ALIGN_LEFT, new Phrase(
+                "nested layers"), 80, 775, 0);
+        cb.endLayer();
+        cb.beginLayer(nested_1);
+        ColumnText.showTextAligned(cb, Element.ALIGN_LEFT, new Phrase(
+                "nested layer 1"), 80, 800, 0);
+        cb.endLayer();
+        cb.beginLayer(nested_2);
+        ColumnText.showTextAligned(cb, Element.ALIGN_LEFT, new Phrase(
+                "nested layer 2"), 80, 750, 0);
+        cb.endLayer();
+
+        PdfPTable table = new PdfPTable(5);
+        // HEADER
+        Paragraph packageCell = new Paragraph("Package");
+        packageCell.getFont().setStyle(Font.BOLD);
+        table.addCell(packageCell);
+        table.addCell("Nombre de Clase");
+        table.addCell("Nombre de Método");
+        table.addCell("Número de líneas");
+        table.addCell("Cobertura por test unitario");
+        document.add(table);
+
+        PdfLayer group = PdfLayer.createTitle("Grouped layers", writer);
+        PdfLayer layer1 = new PdfLayer("Group: layer 1", writer);
+        PdfLayer layer2 = new PdfLayer("Group: layer 2", writer);
+        group.addChild(layer1);
+        group.addChild(layer2);
+        cb.beginLayer(layer1);
+        ColumnText.showTextAligned(cb, Element.ALIGN_LEFT, new Phrase(
+                "layer 1 in the group"), 50, 700, 0);
+        cb.endLayer();
+        cb.beginLayer(layer2);
+        ColumnText.showTextAligned(cb, Element.ALIGN_LEFT, new Phrase(
+                "layer 2 in the group"), 50, 675, 0);
+        cb.endLayer();
+
+        PdfLayer radiogroup = PdfLayer.createTitle("Radio group", writer);
+        PdfLayer radio1 = new PdfLayer("Radiogroup: layer 1", writer);
+        radio1.setOn(true);
+        PdfLayer radio2 = new PdfLayer("Radiogroup: layer 2", writer);
+        radio2.setOn(false);
+        PdfLayer radio3 = new PdfLayer("Radiogroup: layer 3", writer);
+        radio3.setOn(false);
+        radiogroup.addChild(radio1);
+        radiogroup.addChild(radio2);
+        radiogroup.addChild(radio3);
+        ArrayList<PdfLayer> options = new ArrayList<PdfLayer>();
+        options.add(radio1);
+        options.add(radio2);
+        options.add(radio3);
+        writer.addOCGRadioGroup(options);
+        cb.beginLayer(radio1);
+        ColumnText.showTextAligned(cb, Element.ALIGN_LEFT, new Phrase(
+                "option 1"), 50, 600, 0);
+        cb.endLayer();
+        cb.beginLayer(radio2);
+        ColumnText.showTextAligned(cb, Element.ALIGN_LEFT, new Phrase(
+                "option 2"), 50, 575, 0);
+        cb.endLayer();
+        cb.beginLayer(radio3);
+        ColumnText.showTextAligned(cb, Element.ALIGN_LEFT, new Phrase(
+                "option 3"), 50, 550, 0);
+        cb.endLayer();
+
+        PdfLayer not_printed = new PdfLayer("not printed", writer);
+        not_printed.setOnPanel(false);
+        not_printed.setPrint("Print", false);
+        cb.beginLayer(not_printed);
+        ColumnText.showTextAligned(cb, Element.ALIGN_CENTER, new Phrase(
+                "PRINT THIS PAGE"), 300, 700, 90);
+        cb.endLayer();
+
+        PdfLayer zoom = new PdfLayer("Zoom 0.75-1.25", writer);
+        zoom.setOnPanel(false);
+        zoom.setZoom(0.75f, 1.25f);
+        cb.beginLayer(zoom);
+        ColumnText.showTextAligned(cb, Element.ALIGN_LEFT, new Phrase(
+                        "Only visible if the zoomfactor is between 75 and 125%"), 30,
+                530, 90);
+        cb.endLayer();
+
+        // step 5
+        document.close();
     }
 
     public byte[] getJavaMethodsCoverageReport(final List<Tarea> metodos) throws IOException, DocumentException {
 
-        ByteArrayOutputStream baos = new ByteArrayOutputStream();
-
         Document document = new Document();
-        PdfWriter.getInstance(document, baos);
+        document.setPageSize(PageSize.A4);
+        // step 2
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        PdfWriter writer = PdfWriter.getInstance(document, baos);
+        writer.setPdfVersion(PdfWriter.VERSION_1_5);
+
+        // step 3
         document.open();
+        // step 4
+        Font headerFont = new Font(Font.FontFamily.HELVETICA, 14);
+        PdfPTable tabHead1 = new PdfPTable(1);
+        tabHead1.setWidthPercentage(100);
+        PdfPCell cellOne = new PdfPCell(
+                new Phrase("Informe ejecutivo de cobertura en tests unitarios", headerFont));
+        cellOne.setBorder(Rectangle.NO_BORDER);
+        PdfPCell cellBlank1 = new PdfPCell(new Phrase("                                              "));
+        cellBlank1.setBorder(Rectangle.NO_BORDER);
+        PdfPCell cellBlank2 = new PdfPCell(new Phrase("                                              "));
+        cellBlank2.setBorder(Rectangle.NO_BORDER);
+        tabHead1.addCell(cellOne);
+        tabHead1.addCell(cellBlank1);
+        tabHead1.addCell(cellBlank2);
+        document.add(tabHead1);
 
-        PdfPTable table = new PdfPTable(5);
+        PdfPTable tabHead2 = new PdfPTable(1);
+        tabHead2.setWidthPercentage(50);
+        PdfPCell cellTwo = new PdfPCell(new Phrase("Elemento promocionable MACAMAC0"));
+        cellTwo.setBorder(Rectangle.BOX);
+        //cellOne.setBackgroundColor(new BaseColor(255,255,45));
+        tabHead2.addCell(cellTwo);
+        document.add(tabHead2);
 
-        // cabecera
-        PdfPCell cell = new PdfPCell(new Phrase("Informe ejecutivo de cobertura en tests unitarios para los "
-                + "métodos público identificados en el elemento promocionable <<..>>" ));
-        cell.setFixedHeight(190);
-        cell.setBorder(Rectangle.NO_BORDER);
-        cell.setColspan(2);
-        table.addCell(cell);
+        /**** chicha de las tareas ***/
+        //PdfPTable table = new PdfPTable(5);
+        PdfPTable table = new PdfPTable(new float[] { 25, 25, 25, 12, 13 });
 
-        PdfPHeaderCell headerCell_1 = new PdfPHeaderCell();
-        headerCell_1.setName("Package");
-        PdfPCell cell_1 = new PdfPCell();
+        table.setWidthPercentage(100);
+        table.setPaddingTop(2);
+        // HEADER
+        Paragraph packageCell = new Paragraph("Package");
+        packageCell.getFont().setStyle(Font.BOLD);
+        packageCell.getFont().setStyle(Font.FontFamily.HELVETICA.name());
+        table.addCell(packageCell);
 
-        PdfPHeaderCell headerCell_2 = new PdfPHeaderCell();
-        headerCell_2.setName("Nombre de Clase");
-        PdfPCell cell_2 = new PdfPCell();
+        Paragraph claseCell = new Paragraph("Clase");
+        claseCell.getFont().setStyle(Font.BOLD);
+        claseCell.getFont().setStyle(Font.FontFamily.HELVETICA.name());
+        table.addCell(claseCell);
 
-        PdfPHeaderCell headerCell_3 = new PdfPHeaderCell();
-        headerCell_3.setName("Nombre de Método");
-        PdfPCell cell_3 = new PdfPCell();
+        Paragraph metodoCell = new Paragraph("Método");
+        metodoCell.getFont().setStyle(Font.BOLD);
+        metodoCell.getFont().setStyle(Font.FontFamily.HELVETICA.name());
+        table.addCell(metodoCell);
 
-        PdfPHeaderCell headerCell_4 = new PdfPHeaderCell();
-        headerCell_4.setName("Número de líneas");
-        PdfPCell cell_4 = new PdfPCell();
+        Paragraph numLinesCell = new Paragraph("Nº líneas");
+        numLinesCell.getFont().setStyle(Font.BOLD);
+        numLinesCell.getFont().setStyle(Font.FontFamily.HELVETICA.name());
+        table.addCell(numLinesCell);
 
-        PdfPHeaderCell headerCell_5 = new PdfPHeaderCell();
-        headerCell_5.setName("Cobertura por test unitario");
-        PdfPCell cell_5 = new PdfPCell();
+        Paragraph coberturaCell = new Paragraph("Cobertura");
+        coberturaCell.getFont().setStyle(Font.BOLD);
+        coberturaCell.getFont().setStyle(Font.FontFamily.HELVETICA.name());
+        table.addCell(coberturaCell);
 
-        cell_1.addHeader(headerCell_1);
-        table.addCell(cell_1);
-        cell_2.addHeader(headerCell_2);
-        table.addCell(cell_2);
-        cell_3.addHeader(headerCell_3);
-        table.addCell(cell_3);
-        cell_4.addHeader(headerCell_4);
-        table.addCell(cell_4);
-        cell_5.addHeader(headerCell_5);
-        table.addCell(cell_5);
-
+        Font smallfont = new Font(Font.FontFamily.HELVETICA, 10);
         // Llenar la tabla con datos de listaTareas
         for (Tarea tarea : metodos) {
-            table.addCell(tarea.getPackageName());
-            table.addCell(tarea.getClassName());
-            table.addCell(tarea.getMethodName());
-            table.addCell("" + tarea.getNumLines());
-            table.addCell(tarea.getCoverage() ? "Sí" : "No");
+            Paragraph cell1 = new Paragraph(tarea.getPackageName());
+            cell1.setFont(smallfont);
+            table.addCell(cell1);
+
+            Paragraph cell2 = new Paragraph(tarea.getClassName());
+            cell2.setFont(smallfont);
+            table.addCell(cell2);
+
+            Paragraph cell3 = new Paragraph(tarea.getMethodName());
+            cell3.setFont(smallfont);
+            table.addCell(cell3);
+
+            Paragraph cell4 = new Paragraph(tarea.getNumLines());
+            cell4.setFont(smallfont);
+            table.addCell(cell4);
+
+            Paragraph cell5 = new Paragraph(tarea.getCoverage() ? "Sí" : "No");
+            cell5.setFont(smallfont);
+            table.addCell(cell5);
+
         }
 
         document.add(table);
