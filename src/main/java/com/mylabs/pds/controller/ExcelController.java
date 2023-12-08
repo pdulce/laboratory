@@ -18,7 +18,7 @@ public class ExcelController {
     @GetMapping("/write")
     public final String writeExcel() {
         try {
-            excelService.writeToExcel();
+            excelService.writeToExcel("C:\\Users\\pedro.dulce\\Downloads\\2022-7207 Lote 1 - Oficina de Proyectos.xlsx");
             return "Datos escritos en Excel correctamente.";
         } catch (IOException e) {
             e.printStackTrace();
