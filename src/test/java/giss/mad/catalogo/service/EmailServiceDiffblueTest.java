@@ -1,10 +1,11 @@
-package com.mylabs.pds.service;
+package giss.mad.catalogo.service;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import com.mylabs.pds.service.EmailService;
 import jakarta.mail.Session;
 import jakarta.mail.internet.MimeMessage;
 import org.junit.jupiter.api.Test;
@@ -18,17 +19,17 @@ import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 
-@ContextConfiguration(classes = {EmailService.class})
+@ContextConfiguration(classes = {giss.mad.catalogo.service.EmailService.class})
 @ExtendWith(SpringExtension.class)
 class EmailServiceDiffblueTest {
     @Autowired
-    private EmailService emailService;
+    private giss.mad.catalogo.service.EmailService emailService;
 
     @MockBean
     private JavaMailSender javaMailSender;
 
     /**
-     * Method under test: {@link EmailService#sendEmail()}
+     * Method under test: {@link giss.mad.catalogo.service.EmailService#sendEmail()}
      */
     @Test
     void testSendEmail() throws MailException {
