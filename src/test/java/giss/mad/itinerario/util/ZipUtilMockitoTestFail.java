@@ -9,7 +9,7 @@ import java.util.List;
 
 import org.junit.jupiter.api.Test;
 
-class ZipUtilMockitoTest {
+class ZipUtilMockitoTestFail {
     /**
      * Method under test: {@link ZipUtil#generarZipDesdeTareas(List)}
      */

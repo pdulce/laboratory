@@ -43,7 +43,7 @@ import org.springframework.test.context.junit.jupiter.SpringExtension;
 @ContextConfiguration(classes = {GrupoService.class})
 @ActiveProfiles({"test"})
 @ExtendWith(SpringExtension.class)
-class GrupoServiceMockitoTest {
+class GrupoServiceMockitoTestOneFail {
     @MockBean
     private CacheManager cacheManager;
 

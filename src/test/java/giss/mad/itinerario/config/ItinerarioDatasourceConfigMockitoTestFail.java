@@ -12,7 +12,7 @@ import org.springframework.test.context.junit.jupiter.SpringExtension;
 @SpringBootTest
 @ActiveProfiles({"test"})
 @ExtendWith(SpringExtension.class)
-class ItinerarioDatasourceConfigMockitoTest {
+class ItinerarioDatasourceConfigMockitoTestFail {
     @Autowired
     private ItinerarioDatasourceConfig itinerarioDatasourceConfig;
 
